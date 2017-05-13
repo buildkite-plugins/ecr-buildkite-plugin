@@ -25,5 +25,6 @@ steps:
   - label: check login happens correctly
     command:
     plugins:
-      ${BUILDKITE_REPO}#${commit}
+      ${BUILDKITE_REPO}#${commit}:
+        login: true
 YAML
