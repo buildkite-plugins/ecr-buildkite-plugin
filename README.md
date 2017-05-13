@@ -12,7 +12,7 @@ This will login docker to ECR prior to running your script.
 steps:
   - command: ./run_build.sh
     plugins:
-      lox/ecr#v1.0:
+      lox/ecr#v1.0.0:
         login: "true"
 ```
 
