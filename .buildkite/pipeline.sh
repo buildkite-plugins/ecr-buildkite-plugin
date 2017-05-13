@@ -26,5 +26,5 @@ steps:
     command: cat ~/.docker/config.json
     plugins:
       ${BUILDKITE_REPO}#${commit}:
-        login: true
+        login: "true"
 YAML

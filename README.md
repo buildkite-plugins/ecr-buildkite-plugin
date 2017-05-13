@@ -13,7 +13,7 @@ steps:
   - command: ./run_build.sh
     plugins:
       lox/ecr#v1.0:
-        login: true
+        login: "true"
 ```
 
 ## Options
