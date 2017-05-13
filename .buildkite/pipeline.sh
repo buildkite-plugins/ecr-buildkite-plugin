@@ -23,7 +23,7 @@ steps:
 
   - wait
   - label: check login happens correctly
-    command:
+    command: cat ~/.docker/config.json
     plugins:
       ${BUILDKITE_REPO}#${commit}:
         login: true
