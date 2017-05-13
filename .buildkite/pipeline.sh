@@ -27,5 +27,5 @@ steps:
     plugins:
       ${BUILDKITE_REPO}#${commit}:
         login: "true"
-        account-ids: 005820773040
+        account-ids: "005820773040"
 YAML
