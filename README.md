@@ -2,9 +2,11 @@
 
 __This is designed to run with Buildkite Agent v3.x beta. Plugins are not yet supported in Buildkite Agent v2.x.__
 
-Login to ECR in your build steps.
+Interact with [Amazon Elastic Container Registry (ECR)](https://aws.amazon.com/ecr/) in your build steps.
 
-## Example
+Supports authenticating docker and removing tags/images.
+
+## Login Example
 
 This will login docker to ECR prior to running your script. 
 
@@ -15,6 +17,21 @@ steps:
       lox/ecr#v1.0.0:
         login: "true"
 ```
+
+## Delete Example
+
+This will delete a set of tags used by the docker-compose plugin:
+
+```yml
+steps:
+  - plugins:
+      lox/ecr#v1.0.0:
+        delete: 
+          repository: myimagerepo
+          tags: "${BUILDKITE_PIPELINE_SLUG}-app-build-${BUILDKITE_BUILD_NUMBER}""
+```
+
+See http://docs.aws.amazon.com/cli/latest/reference/ecr/batch-delete-image.html for more detail.
 
 ## Options
 
