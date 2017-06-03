@@ -27,7 +27,7 @@ fi
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   registry_ids=( $(plugin_read_list ACCOUNT_IDS) )
-  login_args=("")
+  login_args=()
 
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     login_args=("--registry-ids" "${registry_ids[@]}")
