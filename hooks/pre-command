@@ -35,15 +35,9 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
 
   echo "~~~ Authenticating with AWS ECR"
   if [[ ${#login_args[@]} -gt 0 ]] ; then
-    if ! ecr_login=$(aws ecr get-login "${login_args[@]}") ; then
-      echo echo "~~~ :warning: ECR login failed"
-      exit 1
-    fi
+    ecr_login=$(aws ecr get-login "${login_args[@]}") || exit $?
   else
-    if ! ecr_login=$(aws ecr get-login) ; then
-      echo echo "~~~ :warning: ECR login failed"
-      exit 1
-    fi
+    ecr_login=$(aws ecr get-login) || exit $?
   fi
 
   eval "$ecr_login"
