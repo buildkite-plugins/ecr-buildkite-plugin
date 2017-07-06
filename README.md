@@ -2,7 +2,7 @@
 
 __This is designed to run with Buildkite Agent v3.x beta. Plugins are not yet supported in Buildkite Agent v2.x.__
 
-Login to ECR in your build steps.
+Login to ECR in your build steps. Requires aws cli version v1.11.91 or higher.
 
 ## Example
 

@@ -27,18 +27,14 @@ fi
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   registry_ids=( $(plugin_read_list ACCOUNT_IDS) )
-  login_args=()
+  login_args=("--no-include-email")
 
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
-    login_args=("--registry-ids" "${registry_ids[@]}")
+    login_args+=("--registry-ids" "${registry_ids[@]}")
   fi
 
   echo "~~~ Authenticating with AWS ECR"
-  if [[ ${#login_args[@]} -gt 0 ]] ; then
-    ecr_login=$(aws ecr get-login "${login_args[@]}") || exit $?
-  else
-    ecr_login=$(aws ecr get-login) || exit $?
-  fi
+  ecr_login=$(aws ecr get-login "${login_args[@]}") || exit $?
 
   eval "$ecr_login"
 fi

@@ -8,10 +8,10 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
 
   stub aws \
-    "ecr get-login : echo docker login -u AWS -p 1234 -e none https://1234.dkr.ecr.us-east-1.amazonaws.com"
+    "ecr get-login --no-include-email : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
 
   stub docker \
-    "login -u AWS -p 1234 -e none https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
+    "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
 
   run $PWD/hooks/pre-command
 
@@ -28,7 +28,7 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_1=2222
 
   stub aws \
-    "ecr get-login --registry-ids 1111 2222 : echo echo logging in to docker"
+    "ecr get-login --no-include-email --registry-ids 1111 2222 : echo echo logging in to docker"
 
   run $PWD/hooks/pre-command
 
