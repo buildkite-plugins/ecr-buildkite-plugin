@@ -43,7 +43,7 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS="1111,2222,3333"
 
   stub aws \
-    "ecr get-login --registry-ids 1111 2222 3333 : echo echo logging in to docker"
+    "ecr get-login --no-include-email --registry-ids 1111 2222 3333 : echo echo logging in to docker"
 
   run $PWD/hooks/pre-command
 
