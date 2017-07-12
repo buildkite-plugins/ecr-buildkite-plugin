@@ -3,4 +3,4 @@ services:
   tests:
     image: buildkite/plugin-tester
     volumes:
-      - .:/plugin
+      - ".:/plugin:ro"

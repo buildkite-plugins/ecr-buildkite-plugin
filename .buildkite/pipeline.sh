@@ -16,7 +16,6 @@ fi
 cat <<YAML
 steps:
   - label: run bats tests
-    command: tests/
     plugins:
       docker-compose#v1.2.1:
         run: tests
