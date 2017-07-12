@@ -23,9 +23,9 @@ steps:
 
   - wait
   - label: check login happens correctly
-    command: grep 005820773040 ~/.docker/config.json
+    command: grep 032379705303 ~/.docker/config.json
     plugins:
       ${BUILDKITE_REPO}#${commit}:
         login: "true"
-        account-ids: "005820773040"
+        account-ids: "032379705303"
 YAML

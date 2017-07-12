@@ -37,3 +37,18 @@ load '/usr/local/lib/bats/load.bash'
 
   unstub aws
 }
+
+@test "Login to ECR with Comma-delimited Account IDS" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS="1111,2222,3333"
+
+  stub aws \
+    "ecr get-login --registry-ids 1111 2222 3333 : echo echo logging in to docker"
+
+  run $PWD/hooks/pre-command
+
+  assert_success
+  assert_output --partial "logging in to docker"
+
+  unstub aws
+}
