@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eu -o pipefail
+set -eux -o pipefail
 
 # Reads either a value or a list from plugin config
 function plugin_read_list() {
@@ -67,7 +67,9 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   fi
 
   echo "~~~ Authenticating with AWS ECR"
-  ecr_login=$(aws ecr get-login "${login_args[@]:-}") || exit $?
+
+  # shellcheck disable=SC2068
+  ecr_login=$(aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
 
   eval "$ecr_login"
 fi
