@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eux -o pipefail
+set -eu -o pipefail
 
 # Reads either a value or a list from plugin config
 function plugin_read_list() {
@@ -71,5 +71,6 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   # shellcheck disable=SC2068
   ecr_login=$(aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
 
-  eval "$ecr_login"
+  # despite all the horror above, if we have docker > 17.06 it still breaks...
+  eval "$(sed 's/-e none//' <<< "$ecr_login")"
 fi
