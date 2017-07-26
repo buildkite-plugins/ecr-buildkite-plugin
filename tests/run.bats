@@ -90,3 +90,23 @@ load '/usr/local/lib/bats/load.bash'
 
   unstub aws
 }
+
+@test "Login to ECR with region specified" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+  export BUILDKITE_PLUGIN_ECR_REGISTRY_REGION=ap-southeast-2
+  
+  stub aws \
+    "ecr get-login --no-include-email : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com"
+
+  stub docker \
+    "login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com : echo logging in to docker"
+
+  run $PWD/hooks/pre-command
+
+  assert_success
+  assert_output --partial "logging in to docker"
+
+  unstub aws
+  unstub docker
+}

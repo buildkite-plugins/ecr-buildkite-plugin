@@ -62,6 +62,10 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
     login_args+=("--no-include-email")
   fi
 
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]] ; then
+    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
+  fi
+
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     login_args+=("--registry-ids" "${registry_ids[@]}")
   fi
