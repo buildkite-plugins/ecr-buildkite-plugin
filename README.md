@@ -16,6 +16,18 @@ steps:
         login: true
 ```
 
+If you want to log in to ECR on [another account](https://docs.aws.amazon.com/AmazonECR/latest/userguide/RepositoryPolicyExamples.html#IAM_allow_other_accounts):
+
+
+```yml
+steps:
+  - command: ./run_build.sh
+    plugins:
+      ecr#v1.1.2:
+        login: true
+        account_ids: "0015615400570"
+```
+
 ## Options
 
 ### `login`
@@ -24,7 +36,7 @@ Whether to login to your account's ECR.
 
 ### `account-ids` (optional)
 
-A list of AWS account IDs that correspond to the Amazon ECR registries that you want to log in to.
+Either a string, or a list of strings with AWS account IDs that correspond to the Amazon ECR registries that you want to log in to. Make sure to quote these if they start with a 0.
 
 ### `no-include-email` (optional)
 

@@ -67,10 +67,11 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   fi
 
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
+    echo "~~~ Authenticating with AWS ECR to ${registry_ids[*]}"
     login_args+=("--registry-ids" "${registry_ids[@]}")
+  else
+    echo "~~~ Authenticating with AWS ECR"
   fi
-
-  echo "~~~ Authenticating with AWS ECR"
 
   # shellcheck disable=SC2068
   ecr_login=$(aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
