@@ -42,7 +42,7 @@ Either a string, or a list of strings with AWS account IDs that correspond to th
 
 Add `--no-include-email` to ecr get-login. Required for docker 17.06+, but needs aws-cli 1.11.91+.
 
-### `region` (optional)
+### `registry-region` (optional)
 
 Set a specific region for ECR, defaults to the current
 
