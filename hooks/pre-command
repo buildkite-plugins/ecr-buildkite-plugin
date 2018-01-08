@@ -66,6 +66,11 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
   fi
 
+  # In earlier versions, the documentation referred to region, not registry-region
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGION:-}" ]] ; then
+    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
+  fi
+
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     echo "~~~ Authenticating with AWS ECR to ${registry_ids[*]}"
     login_args+=("--registry-ids" "${registry_ids[@]}")
