@@ -95,7 +95,7 @@ load '/usr/local/lib/bats/load.bash'
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
   export BUILDKITE_PLUGIN_ECR_REGISTRY_REGION=ap-southeast-2
-  
+
   stub aws \
     "ecr get-login --no-include-email : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com"
 
@@ -109,4 +109,21 @@ load '/usr/local/lib/bats/load.bash'
 
   unstub aws
   unstub docker
+}
+
+@test "Login to ECR with error, and then retry until success" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+
+  stub aws \
+    "ecr get-login --no-include-email : exit 1" \
+    "ecr get-login --no-include-email : echo echo logging in to docker"
+
+  run $PWD/hooks/pre-command
+
+  assert_success
+  assert_output --partial "Attempt 1 failed! Trying again in 1 seconds..."
+  assert_output --partial "logging in to docker"
+
+  unstub aws
 }
