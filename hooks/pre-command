@@ -56,30 +56,32 @@ fi
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   registry_ids=( $(plugin_read_list ACCOUNT_IDS | tr "," "\n") )
-  login_args=()
+  login_command=("aws" "ecr" "get-login")
 
   if [[ $BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL =~ (true|on|1) ]] ; then
-    login_args+=("--no-include-email")
+    login_command+=("--no-include-email")
   fi
 
   # In earlier versions, we supported registry-region. This is now deprecated
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]] ; then
-    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
+    login_command+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
   fi
 
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGION:-}" ]] ; then
-    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
+    login_command+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
   fi
 
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     echo "~~~ Authenticating with AWS ECR to ${registry_ids[*]}"
-    login_args+=("--registry-ids" "${registry_ids[@]}")
+    login_command+=("--registry-ids" "${registry_ids[@]}")
   else
     echo "~~~ Authenticating with AWS ECR"
   fi
 
-  # shellcheck disable=SC2068
-  ecr_login=$(aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
+  echo -ne '\033[90m$\033[0m' >&2
+  echo "${login_command[*]}" >&2
+
+  ecr_login="$("${login_command[@]}")" || exit $?
 
   # despite all the horror above, if we have docker > 17.06 it still breaks...
   eval "$(sed 's/-e none//' <<< "$ecr_login")"
