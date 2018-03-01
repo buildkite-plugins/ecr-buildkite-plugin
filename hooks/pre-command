@@ -62,11 +62,11 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
     login_args+=("--no-include-email")
   fi
 
+  # In earlier versions, we supported registry-region. This is now deprecated
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]] ; then
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
   fi
 
-  # In earlier versions, the documentation referred to region, not registry-region
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGION:-}" ]] ; then
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
   fi
