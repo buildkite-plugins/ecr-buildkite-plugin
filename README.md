@@ -1,8 +1,6 @@
 # ECR Buildkite Plugin
 
-__This is designed to run with Buildkite Agent v3.x beta. Plugins are not yet supported in Buildkite Agent v2.x.__
-
-Login to ECR in your build steps.
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) to login to an ECR repository before running a build step.
 
 ## Example
 
