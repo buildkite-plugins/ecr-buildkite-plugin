@@ -19,6 +19,10 @@ steps:
     plugins:
       docker-compose#v1.2.1:
         run: tests
+  - label: ":sparkles: lint"
+    plugins:
+      plugin-linter#v1.0.0:
+        name: ecr
 
   - wait
   - label: check login happens correctly
