@@ -15,16 +15,23 @@ fi
 
 cat <<YAML
 steps:
-  - label: run bats tests
+  - label: ":shell: Tests"
     plugins:
       docker-compose#v1.2.1:
         run: tests
-  - label: ":sparkles: lint"
+
+  - label: ":sparkles: Lint"
     plugins:
       plugin-linter#v1.0.0:
         name: ecr
 
+  - label: ":shell: Shellcheck"
+    plugins:
+      shellcheck#v1.0.0:
+        files: hooks/**
+
   - wait
+
   - label: check login happens correctly
     command: grep 032379705303 ~/.docker/config.json
     plugins:
