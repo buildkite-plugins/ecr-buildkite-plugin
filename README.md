@@ -21,7 +21,7 @@ If you want to log in to ECR on [another account](https://docs.aws.amazon.com/Am
 steps:
   - command: ./run_build.sh
     plugins:
-      ecr#v1.1.3:
+      ecr#v1.1.4:
         login: true
         account_ids: "0015615400570"
 ```
