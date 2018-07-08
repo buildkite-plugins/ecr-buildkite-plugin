@@ -1,0 +1,17 @@
+# Config for https://github.com/apps/release-drafter
+template: |
+  ## TODO: Added/Removed/Fixed/Changed
+
+  $CHANGES
+
+  ## Upgrading
+
+  To upgrade, update your `pipeline.yml` files:
+
+  ```diff
+  steps:
+    - plugins:
+  -     ecr#$PREVIOUS_TAG:
+  +     ecr#TODO:
+          login: true
+  ```
