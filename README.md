@@ -44,6 +44,10 @@ Add `--no-include-email` to ecr get-login. Required for docker 17.06+, but needs
 
 Set a specific region for ECR, defaults to the current
 
+### `retries` (optional)
+
+Retries login after a delay N times. Defaults to 0.
+
 ## License
 
 MIT (see [LICENSE](LICENSE))

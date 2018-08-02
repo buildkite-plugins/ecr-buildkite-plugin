@@ -131,3 +131,39 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
   unstub docker
 }
+
+@test "Login to ECR with error, and then retry until success" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+  export BUILDKITE_PLUGIN_ECR_RETRIES=1
+
+  stub aws \
+    "ecr get-login --no-include-email : exit 1" \
+    "ecr get-login --no-include-email : echo echo logging in to docker"
+
+  run $PWD/hooks/pre-command
+
+  assert_success
+  assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
+  assert_output --partial "logging in to docker"
+
+  unstub aws
+}
+
+@test "Login to ECR with error, and then retry until failure" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+  export BUILDKITE_PLUGIN_ECR_RETRIES=1
+
+  stub aws \
+    "ecr get-login --no-include-email : exit 1" \
+    "ecr get-login --no-include-email : exit 1"
+
+  run $PWD/hooks/pre-command
+
+  assert_failure
+  assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds..."
+  assert_output --partial "Login failed after 2 attempts"
+
+  unstub aws
+}

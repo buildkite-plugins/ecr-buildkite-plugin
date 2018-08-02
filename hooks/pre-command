@@ -35,9 +35,31 @@ function aws_version_ge() {
   [[ ${current[1]} -gt ${wanted[1]} ]] && return 0
   [[ ${current[2]} -ge ${wanted[2]} ]] && return 0
 
-  echo "$version isn't ge $1"
+  echo "$version isn't ge $1" >&2
 
   return 1
+}
+
+# Retries a command on failure.
+function retry() {
+  local -r -i retries="$1"; shift
+  local -i max_attempts=$((retries + 1))
+  local -i attempt_num=1
+  local exit_code
+
+  until "$@" ; do
+    exit_code=$?
+    echo "$attempt_num == $retries" >&2
+    if [[ $retries -eq 0 ]] ; then
+      return $exit_code
+    elif (( attempt_num == max_attempts )) ; then
+      echo "Login failed after $attempt_num attempts" >&2
+      return $exit_code
+    else
+      echo "Login failed on attempt ${attempt_num} of ${max_attempts}. Trying again in $attempt_num seconds..." >&2
+      sleep $(( attempt_num++ ))
+    fi
+  done
 }
 
 if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
@@ -79,7 +101,9 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   fi
 
   # shellcheck disable=SC2068
-  ecr_login=$(aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
+  ecr_login=$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
+
+  echo "$ecr_login"
 
   # despite all the horror above, if we have docker > 17.06 it still breaks...
   eval "$(sed 's/-e none//' <<< "$ecr_login")"
