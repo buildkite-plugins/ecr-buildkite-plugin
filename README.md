@@ -1,8 +1,6 @@
 # ECR Buildkite Plugin
 
-__This is designed to run with Buildkite Agent v3.x beta. Plugins are not yet supported in Buildkite Agent v2.x.__
-
-Login to ECR in your build steps.
+A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) to login to an ECR repository before running a build step.
 
 ## Example
 
@@ -12,7 +10,7 @@ This will login docker to ECR prior to running your script.
 steps:
   - command: ./run_build.sh
     plugins:
-      ecr#v1.1.3:
+      ecr#v1.1.4:
         login: true
 ```
 
@@ -23,7 +21,7 @@ If you want to log in to ECR on [another account](https://docs.aws.amazon.com/Am
 steps:
   - command: ./run_build.sh
     plugins:
-      ecr#v1.1.3:
+      ecr#v1.1.4:
         login: true
         account_ids: "0015615400570"
 ```
