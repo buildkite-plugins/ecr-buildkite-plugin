@@ -14,7 +14,7 @@ load '/usr/local/lib/bats/load.bash'
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -33,7 +33,7 @@ load '/usr/local/lib/bats/load.bash'
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -51,7 +51,7 @@ load '/usr/local/lib/bats/load.bash'
   stub aws \
     "ecr get-login --no-include-email --registry-ids 1111 2222 : echo echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -67,7 +67,7 @@ load '/usr/local/lib/bats/load.bash'
     "--version : echo aws-cli/1.11.40 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
     "ecr get-login --registry-ids 1111 2222 3333 : echo echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -83,7 +83,7 @@ load '/usr/local/lib/bats/load.bash'
     "--version : echo aws-cli/1.11.117 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
     "ecr get-login --no-include-email --registry-ids 1111 2222 3333 : echo echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -102,7 +102,7 @@ load '/usr/local/lib/bats/load.bash'
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com : echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -123,7 +123,7 @@ load '/usr/local/lib/bats/load.bash'
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com : echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "logging in to docker"
@@ -141,7 +141,7 @@ load '/usr/local/lib/bats/load.bash'
     "ecr get-login --no-include-email : exit 1" \
     "ecr get-login --no-include-email : echo echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
@@ -159,7 +159,7 @@ load '/usr/local/lib/bats/load.bash'
     "ecr get-login --no-include-email : exit 1" \
     "ecr get-login --no-include-email : exit 1"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_failure
   assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds..."
