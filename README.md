@@ -10,8 +10,8 @@ This will login docker to ECR prior to running your script.
 steps:
   - command: ./run_build.sh
     plugins:
-      ecr#v1.1.4:
-        login: true
+      - ecr#v1.1.4:
+          login: true
 ```
 
 If you want to log in to ECR on [another account](https://docs.aws.amazon.com/AmazonECR/latest/userguide/RepositoryPolicyExamples.html#IAM_allow_other_accounts):
@@ -21,9 +21,9 @@ If you want to log in to ECR on [another account](https://docs.aws.amazon.com/Am
 steps:
   - command: ./run_build.sh
     plugins:
-      ecr#v1.1.4:
-        login: true
-        account_ids: "0015615400570"
+      - ecr#v1.1.4:
+          login: true
+          account_ids: "0015615400570"
 ```
 
 ## Options
