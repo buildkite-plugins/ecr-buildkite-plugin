@@ -167,3 +167,22 @@ load '/usr/local/lib/bats/load.bash'
 
   unstub aws
 }
+
+@test "Login to ECR doesn't disclose credentials" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+
+  stub aws \
+    "ecr get-login --no-include-email : echo docker login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com"
+
+  stub docker \
+    "login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
+
+  run $PWD/hooks/pre-command
+
+  assert_success
+  refute_output --partial "supersecret"
+
+  unstub aws
+  unstub docker
+}

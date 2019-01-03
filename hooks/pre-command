@@ -27,7 +27,7 @@ function aws_version_ge() {
   local current=( ${version//./ } )
 
   if [[ ! ${#current[@]} -eq 3 ]] ; then
-    echo "Expected $version to be in the form x.y.z"
+    echo "Expected $version to be in the form x.y.z" >&2
     exit 1
   fi
 
@@ -36,7 +36,6 @@ function aws_version_ge() {
   [[ ${current[2]} -ge ${wanted[2]} ]] && return 0
 
   echo "$version isn't ge $1" >&2
-
   return 1
 }
 
@@ -102,8 +101,6 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
 
   # shellcheck disable=SC2068
   ecr_login=$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
-
-  echo "$ecr_login"
 
   # despite all the horror above, if we have docker > 17.06 it still breaks...
   eval "$(sed 's/-e none//' <<< "$ecr_login")"
