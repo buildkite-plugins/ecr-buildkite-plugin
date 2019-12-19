@@ -99,6 +99,14 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
     echo "~~~ Authenticating with AWS ECR"
   fi
 
+  if [[ -z "${BUILDKITE_PLUGIN_ECR_ACCESS_KEY_ID:-}" ]] ; then
+    AWS_ACCESS_KEY_ID="$BUILDKITE_PLUGIN_ECR_ACCESS_KEY_ID"
+  fi
+
+  if [[ -z "${BUILDKITE_PLUGIN_ECR_SECRET_ACCESS_KEY_ENV:-}" ]] ; then
+    AWS_SECRET_ACCESS_KEY="${!BUILDKITE_PLUGIN_ECR_SECRET_ACCESS_KEY_ENV}"
+  fi
+
   # shellcheck disable=SC2068
   ecr_login=$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
 

@@ -18,5 +18,9 @@ configuration:
       type: boolean
     region:
       type: string
+    access-key-id:
+      type: string
+    secret-access-key-env:
+      type: string
   required:
     - login
