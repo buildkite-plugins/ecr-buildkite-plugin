@@ -1,0 +1,21 @@
+steps:
+  - label: ":shell: Tests"
+    plugins:
+      docker-compose#v1.2.1:
+        run: tests
+
+  - label: ":sparkles: Lint"
+    plugins:
+      plugin-linter#v1.0.0:
+        name: ecr
+
+  - label: ":shell: Shellcheck"
+    plugins:
+      shellcheck#v1.0.1:
+        files: hooks/**
+    skip: "Shellcheck doesn't pass right now"
+
+  - wait
+
+  - label: ":pipeline: Integration"
+    command: ".buildkite/integration-steps.sh | buildkite-agent pipeline upload"

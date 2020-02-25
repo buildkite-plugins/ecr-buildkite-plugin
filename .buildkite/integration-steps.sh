@@ -15,24 +15,6 @@ fi
 
 cat <<YAML
 steps:
-  - label: ":shell: Tests"
-    plugins:
-      docker-compose#v1.2.1:
-        run: tests
-
-  - label: ":sparkles: Lint"
-    plugins:
-      plugin-linter#v1.0.0:
-        name: ecr
-
-  - label: ":shell: Shellcheck"
-    plugins:
-      shellcheck#v1.0.1:
-        files: hooks/**
-    skip: "Shellcheck doesn't pass right now"
-
-  - wait
-
   - label: check login happens correctly
     command: grep 032379705303 ~/.docker/config.json
     plugins:
