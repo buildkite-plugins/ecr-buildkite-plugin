@@ -17,5 +17,9 @@ steps:
 
   - wait
 
-  - label: ":pipeline: Integration"
-    command: ".buildkite/integration-steps.sh | buildkite-agent pipeline upload"
+  - label: check login happens correctly
+    command: grep 032379705303 ~/.docker/config.json
+    plugins:
+      ${BUILDKITE_REPO}#${BUILDKITE_COMMIT}:
+        login: "true"
+        account-ids: "032379705303"
