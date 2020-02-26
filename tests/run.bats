@@ -178,7 +178,7 @@ load '/usr/local/lib/bats/load.bash'
   stub docker \
     "login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
 
-  run $PWD/hooks/pre-command
+  run $PWD/hooks/environment
 
   assert_success
   refute_output --partial "supersecret"
