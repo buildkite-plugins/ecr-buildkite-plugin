@@ -23,8 +23,8 @@ function plugin_read_list() {
 # Check a provided aws-cli version is greater or equal than the current
 function aws_version_ge() {
   local version; version="$(aws --version 2>&1 | awk -F'[/ ]' '{print $2}')"
-  local wanted=( ${1//./ } )
-  local current=( ${version//./ } )
+  IFS="." read -r -a wanted <<< "$1"
+  IFS="." read -r -a current <<< "$version"
 
   if [[ ! ${#current[@]} -eq 3 ]] ; then
     echo "Expected $version to be in the form x.y.z" >&2
@@ -76,7 +76,7 @@ fi
 
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
-  registry_ids=( $(plugin_read_list ACCOUNT_IDS | tr "," "\n") )
+  mapfile -t registry_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
   login_args=()
 
   if [[ $BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL =~ (true|on|1) ]] ; then
@@ -103,5 +103,7 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   ecr_login=$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
 
   # despite all the horror above, if we have docker > 17.06 it still breaks...
-  eval "$(sed 's/-e none//' <<< "$ecr_login")"
+  ecr_login="${ecr_login//-e none/}"
+
+  eval "$ecr_login"
 fi
