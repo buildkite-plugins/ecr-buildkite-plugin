@@ -69,12 +69,10 @@ function retry() {
   done
 }
 
-if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
-  export AWS_DEFAULT_REGION=us-east-1
-fi
-
-# For logging into the current AWS account’s registry
-if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
+# 'aws ecr get-login' was removed in awscli 2.0.0, but the alternative
+# 'aws ecr get-login-password' was not available until v1.7.10 which
+# was only released earlier that same month.
+function login_using_aws_ecr_get_login() {
   mapfile -t registry_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
   login_args=()
 
@@ -114,4 +112,29 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   ecr_login="${ecr_login//-e none/}"
 
   eval "$ecr_login"
+}
+
+function login_using_aws_ecr_get_login_password() {
+  # TODO: implement using aws ecr get-login-password; the current approach will
+  # not work with awscli v2.0.0 and above.
+  login_using_aws_ecr_get_login
+}
+
+function login() {
+  if aws_version_ge "1.17.10"; then
+    # 'aws ecr get-login-password' was added in awscli 1.17.10
+    login_using_aws_ecr_get_login_password
+  else
+    # older awscli versions must use 'aws ecr get-login'
+    login_using_aws_ecr_get_login
+  fi
+}
+
+if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
+  export AWS_DEFAULT_REGION="us-east-1"
+fi
+
+# For logging into the current AWS account’s registry
+if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
+  login
 fi
