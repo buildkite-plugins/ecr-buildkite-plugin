@@ -26,7 +26,7 @@ function aws_version_ge() {
   version_a_gte_b "$current" "$wanted"
 }
 
-# Whether version A >= B, for versions in the form of X.Y.Z
+# Whether version A >= B, for versions in the form of major.minor.patch
 # Returns success (0) if true, and error (1) if false.
 function version_a_gte_b() {
   IFS="." read -r -a a <<< "$1"
@@ -39,10 +39,11 @@ function version_a_gte_b() {
     echo "Expected $2 to be in the form x.y.z" >&2
     exit 1
   fi
-  [[ ${a[0]} -lt ${b[0]} ]] && return 1
-  [[ ${a[1]} -lt ${b[1]} ]] && return 1
-  [[ ${a[2]} -lt ${b[2]} ]] && return 1
-  return 0
+  [[ ${a[0]} -lt ${b[0]} ]] && return 1 # major less
+  [[ ${a[0]} -gt ${b[0]} ]] && return 0 # major more
+  [[ ${a[1]} -lt ${b[1]} ]] && return 1 # major same, minor less
+  [[ ${a[1]} -gt ${b[1]} ]] && return 0 # major same, minor more
+  [[ ${a[2]} -ge ${b[2]} ]] && return 0 # major same, minor same, patch same or more
 }
 
 # Retries a command on failure.
