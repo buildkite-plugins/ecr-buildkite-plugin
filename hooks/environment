@@ -43,7 +43,8 @@ function version_a_gte_b() {
   [[ ${a[0]} -gt ${b[0]} ]] && return 0 # major more
   [[ ${a[1]} -lt ${b[1]} ]] && return 1 # major same, minor less
   [[ ${a[1]} -gt ${b[1]} ]] && return 0 # major same, minor more
-  [[ ${a[2]} -ge ${b[2]} ]] && return 0 # major same, minor same, patch same or more
+  [[ ${a[2]} -lt ${b[2]} ]] && return 1 # major same, minor same, patch less
+  return 0                              # major same, minor same, patch same or more
 }
 
 # Retries a command on failure.

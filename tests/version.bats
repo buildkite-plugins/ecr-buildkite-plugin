@@ -26,3 +26,19 @@ load "$PWD/hooks/environment"
   run version_a_gte_b "1.1.2" "1.1.1"
   assert_success
 }
+@test "version_a_gte_b: basic: major same, minor same, patch less; false" {
+  run version_a_gte_b "1.1.1" "1.1.2"
+  assert_failure
+}
+@test "version_a_gte_b: specific: 1.11.40 >= 1.11.91; false" {
+  run version_a_gte_b "1.11.40" "1.11.91"
+  assert_failure
+}
+@test "version_a_gte_b: specific: 2.0.2 >= 1.11.91; true" {
+  run version_a_gte_b "2.0.2" "1.11.91"
+  assert_success
+}
+@test "version_a_gte_b: specific: 2.0.2 >= 2.0.0; true" {
+  run version_a_gte_b "2.0.2" "2.0.0"
+  assert_success
+}
