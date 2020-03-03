@@ -71,19 +71,19 @@ if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
   export AWS_DEFAULT_REGION=us-east-1
 fi
 
-# If not specified, auto-detect if we can support no-include-email
-if [[ -z "${BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL:-}" ]] ; then
-  if aws_version_ge "1.11.91" ; then
-    BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="true"
-  else
-    BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="false"
-  fi
-fi
-
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   mapfile -t registry_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
   login_args=()
+
+  # If not specified, auto-detect if we can support no-include-email
+  if [[ -z "${BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL:-}" ]] ; then
+    if aws_version_ge "1.11.91" ; then
+      BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="true"
+    else
+      BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="false"
+    fi
+  fi
 
   if [[ $BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL =~ (true|on|1) ]] ; then
     login_args+=("--no-include-email")
