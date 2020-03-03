@@ -6,19 +6,153 @@ load '/usr/local/lib/bats/load.bash'
 
 # export AWS_STUB_DEBUG=/dev/tty
 
-@test "ECR login (v2.0.0; after get-login was removed)" {
-  skip "awscli v2+ not yet supported"
+@test "ECR login; configured account ID, configured region" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
-  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-1
 
   stub aws \
     "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "ecr get-login --no-include-email : echo fail && false"
+    "ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
   assert_success
   assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+
+@test "ECR login; configured account ID, configured legacy registry-region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGISTRY_REGION=ap-southeast-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+@test "ECR login; configured account ID, discovered region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=421321321321
+  export AWS_DEFAULT_REGION=us-west-2
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 421321321321.dkr.ecr.us-west-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+@test "ECR login; configured account ID, default region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=421321321321
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 421321321321.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+@test "ECR login; multiple account IDs" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=111111111111
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_1=222222222222
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login-password : echo sameforeachaccount"
+
+  stub docker \
+    "login --username AWS --password-stdin 111111111111.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
+    "login --username AWS --password-stdin 222222222222.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
+
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin-0) == "sameforeachaccount" ]]
+  [[ $(cat /tmp/password-stdin-1) == "sameforeachaccount" ]]
+
+  unstub aws
+  unstub docker
+}
+@test "ECR login; multiple comma-separated account IDs" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=333333333333,444444444444
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login-password : echo sameforeachaccount"
+
+  stub docker \
+    "login --username AWS --password-stdin 333333333333.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
+    "login --username AWS --password-stdin 444444444444.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
+
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin-0) == "sameforeachaccount" ]]
+  [[ $(cat /tmp/password-stdin-1) == "sameforeachaccount" ]]
+
+  unstub aws
+  unstub docker
+}
+@test "ECR login; discovered account ID" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "sts get-caller-identity --query Account --output text : echo 888888888888" \
+    "ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
 
   unstub aws
   unstub docker
@@ -44,7 +178,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
-@test "aws ecr get-login (v1.17.9; before get-login-password was added)" {
+@test "ECR login (before aws cli 1.17.10 in which get-login-password was added)" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
 
@@ -64,7 +198,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
-@test "aws ecr get-login (without --no-include-email)" {
+@test "ECR login (before aws cli 1.17.10) (without --no-include-email)" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=false
 
@@ -84,7 +218,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
-@test "aws ecr get-login with Account IDS" {
+@test "ECR login (before aws cli 1.17.10) with Account IDS" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=1111
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_1=2222
@@ -102,7 +236,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
 }
 
-@test "aws ecr get-login with Comma-delimited Account IDS (older aws-cli)" {
+@test "ECR login (before aws cli 1.17.10) with Comma-delimited Account IDS (older aws-cli)" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS="1111,2222,3333"
 
@@ -119,7 +253,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
 }
 
-@test "aws ecr get-login with Comma-delimited Account IDS (newer aws-cli)" {
+@test "ECR login (before aws cli 1.17.10) with Comma-delimited Account IDS (newer aws-cli)" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS="1111,2222,3333"
 
@@ -136,7 +270,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
 }
 
-@test "aws ecr get-login with region specified" {
+@test "ECR login (before aws cli 1.17.10) with region specified" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
   export BUILDKITE_PLUGIN_ECR_REGISTRY_REGION=ap-southeast-2
@@ -157,7 +291,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
-@test "aws ecr get-login with region and registry id's" {
+@test "ECR login (before aws cli 1.17.10) with region and registry id's" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS="1111,2222,3333"
@@ -179,7 +313,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
-@test "aws ecr get-login with error, and then retry until success" {
+@test "ECR login (before aws cli 1.17.10) with error, and then retry until success" {
   [[ -z $SKIP_SLOW ]] || skip "skipping slow test"
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
@@ -199,7 +333,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
 }
 
-@test "aws ecr get-login with error, and then retry until failure" {
+@test "ECR login (before aws cli 1.17.10) with error, and then retry until failure" {
   [[ -z $SKIP_SLOW ]] || skip "skipping slow test"
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
@@ -219,7 +353,7 @@ load '/usr/local/lib/bats/load.bash'
   unstub aws
 }
 
-@test "aws ecr get-login doesn't disclose credentials" {
+@test "ECR login (before aws cli 1.17.10) doesn't disclose credentials" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
 

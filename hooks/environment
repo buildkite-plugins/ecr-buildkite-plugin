@@ -115,9 +115,23 @@ function login_using_aws_ecr_get_login() {
 }
 
 function login_using_aws_ecr_get_login_password() {
-  # TODO: implement using aws ecr get-login-password; the current approach will
-  # not work with awscli v2.0.0 and above.
-  login_using_aws_ecr_get_login
+  local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION}}}"
+  if [[ -z $region ]]; then
+    echo >&2 "AWS region must be specified via plugin config or AWS_DEFAULT_REGION environment"
+    exit 1
+  fi
+  mapfile -t account_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
+  if [[ -z ${account_ids[*]} ]]; then
+    account_ids=("$(aws sts get-caller-identity --query Account --output text)")
+  fi
+  if [[ -z ${account_ids[*]} ]]; then
+    echo >&2 "AWS account ID required via plugin config or 'aws sts get-caller-identity'"
+    exit 1
+  fi
+  local password; password="$(aws ecr get-login-password)"
+  for account_id in "${account_ids[@]}"; do
+    docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
+  done
 }
 
 function login() {
