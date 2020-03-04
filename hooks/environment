@@ -89,6 +89,10 @@ function login_using_aws_ecr_get_login() {
     login_args+=("--no-include-email")
   fi
 
+  if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
+    export AWS_DEFAULT_REGION="us-east-1"
+  fi
+
   # In earlier versions, we supported registry-region. This is now deprecated
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]] ; then
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
@@ -115,10 +119,11 @@ function login_using_aws_ecr_get_login() {
 }
 
 function login_using_aws_ecr_get_login_password() {
-  local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION}}}"
+  local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-}}}"
   if [[ -z $region ]]; then
-    echo >&2 "AWS region must be specified via plugin config or AWS_DEFAULT_REGION environment"
-    exit 1
+    region="us-east-1"
+    echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
+    echo >&2 "Defaulting to $region for legacy compatibility."
   fi
   mapfile -t account_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
   if [[ -z ${account_ids[*]} ]]; then
@@ -128,7 +133,7 @@ function login_using_aws_ecr_get_login_password() {
     echo >&2 "AWS account ID required via plugin config or 'aws sts get-caller-identity'"
     exit 1
   fi
-  local password; password="$(aws ecr get-login-password)"
+  local password; password="$(aws --region "$region" ecr get-login-password)"
   for account_id in "${account_ids[@]}"; do
     docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
   done
@@ -143,10 +148,6 @@ function login() {
     login_using_aws_ecr_get_login
   fi
 }
-
-if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
-  export AWS_DEFAULT_REGION="us-east-1"
-fi
 
 # For logging into the current AWS account’s registry
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
