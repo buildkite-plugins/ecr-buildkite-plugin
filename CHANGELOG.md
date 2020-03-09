@@ -1,3 +1,12 @@
+## [v2.1.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/tree/v2.1.0) (2020-03-10)
+[Full Changelog](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.0.0...v2.1.0)
+
+### Changed
+- AWS CLI Verison 2 support [#40](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/40) (@pda)
+
+### Fixes
+- Correctly version-detect aws-cli [#39](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/39) (@pda)
+
 ## [v2.0.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/tree/v2.0.0) (2019-04-08)
 [Full Changelog](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v1.2.0...v2.0.0)
 
