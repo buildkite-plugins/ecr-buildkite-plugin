@@ -24,6 +24,7 @@ steps:
       - ecr#v2.0.0:
           login: true
           account_ids: "0015615400570"
+          region: "ap-southeast-2"
 ```
 
 ## Options
@@ -42,7 +43,7 @@ Add `--no-include-email` to ecr get-login. Required for docker 17.06+, but needs
 
 ### `region` (optional)
 
-Set a specific region for ECR, defaults to the current
+Set a specific region for ECR, defaults to `AWS_DEFAULT_REGION` on the agent, or `us-east-1` if none specified.
 
 ### `retries` (optional)
 
