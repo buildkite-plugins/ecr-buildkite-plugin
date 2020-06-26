@@ -73,7 +73,11 @@ function retry() {
 # 'aws ecr get-login-password' was not available until v1.7.10 which
 # was only released earlier that same month.
 function login_using_aws_ecr_get_login() {
-  mapfile -t registry_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
+  # bash 3.x compatible equivalent of mapfile;
+  # https://github.com/koalaman/shellcheck/wiki/SC2207
+  registry_ids=()
+  while IFS='' read -r line; do registry_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
+
   login_args=()
 
   # If not specified, auto-detect if we can support no-include-email
@@ -125,7 +129,8 @@ function login_using_aws_ecr_get_login_password() {
     echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
     echo >&2 "Defaulting to $region for legacy compatibility."
   fi
-  mapfile -t account_ids <<< "$(plugin_read_list ACCOUNT_IDS | tr "," "\n")"
+  account_ids=()
+  while IFS='' read -r line; do account_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
   if [[ -z ${account_ids[*]} ]]; then
     account_ids=("$(aws sts get-caller-identity --query Account --output text)")
   fi
