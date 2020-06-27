@@ -131,10 +131,12 @@ function login_using_aws_ecr_get_login_password() {
   fi
   account_ids=()
   while IFS='' read -r line; do account_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
-  if [[ ${#account_ids[@]} -eq 0 ]]; then
+  # check if account_ids is empty, or only contains an empty string.
+  # just testing [[ -z ${account_ids[*]} ]] breaks on bash 3.x if the array is empty.
+  if [[ ${#account_ids[@]} -eq 0 || -z "${account_ids[*]}" ]]; then
     account_ids=("$(aws sts get-caller-identity --query Account --output text)")
   fi
-  if [[ ${#account_ids[@]} -eq 0 ]]; then
+  if [[ ${#account_ids[@]} -eq 0 || -z "${account_ids[*]}" ]]; then
     echo >&2 "AWS account ID required via plugin config or 'aws sts get-caller-identity'"
     exit 1
   fi
