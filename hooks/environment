@@ -131,10 +131,10 @@ function login_using_aws_ecr_get_login_password() {
   fi
   account_ids=()
   while IFS='' read -r line; do account_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
-  if [[ -z ${account_ids[*]} ]]; then
+  if [[ ${#account_ids[@]} -eq 0 ]]; then
     account_ids=("$(aws sts get-caller-identity --query Account --output text)")
   fi
-  if [[ -z ${account_ids[*]} ]]; then
+  if [[ ${#account_ids[@]} -eq 0 ]]; then
     echo >&2 "AWS account ID required via plugin config or 'aws sts get-caller-identity'"
     exit 1
   fi
