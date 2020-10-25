@@ -16,7 +16,7 @@ steps:
           login: true
 ```
 
-If you want to log in to ECR on [another account](https://docs.aws.amazon.com/AmazonECR/latest/userguide/RepositoryPolicyExamples.html#IAM_allow_other_accounts):
+If you want to log in to ECR on [another account](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_allow_other_accounts):
 
 
 ```yml
