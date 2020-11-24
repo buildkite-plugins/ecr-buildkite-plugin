@@ -21,6 +21,8 @@ load '/usr/local/lib/bats/load.bash'
   run "$PWD/hooks/environment"
 
   assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR in ap-southeast-2 for 321321321321 :ecr: :docker:"
   assert_output --partial "logging in to docker"
   [[ $(cat /tmp/password-stdin) == "hunter2" ]]
 
@@ -197,6 +199,7 @@ load '/usr/local/lib/bats/load.bash'
   run "$PWD/hooks/environment"
 
   assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
   assert_output --partial "logging in to docker"
 
   unstub aws
@@ -236,6 +239,8 @@ load '/usr/local/lib/bats/load.bash'
   run "$PWD/hooks/environment"
 
   assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR for 1111 2222 :ecr: :docker:"
   assert_output --partial "logging in to docker"
 
   unstub aws
