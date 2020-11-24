@@ -73,6 +73,8 @@ function retry() {
 # 'aws ecr get-login-password' was not available until v1.7.10 which
 # was only released earlier that same month.
 function login_using_aws_ecr_get_login() {
+  echo "~~~ Authenticating with AWS ECR :ecr: :docker:"
+
   # bash 3.x compatible equivalent of mapfile;
   # https://github.com/koalaman/shellcheck/wiki/SC2207
   registry_ids=()
@@ -107,10 +109,9 @@ function login_using_aws_ecr_get_login() {
   fi
 
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
-    echo "~~~ Authenticating with AWS ECR to ${registry_ids[*]}"
+    # amend the ~~~ log heading with ^^^ to add the AWS account IDs
+    echo "^^^ Authenticating with AWS ECR for ${registry_ids[*]} :ecr: :docker:"
     login_args+=("--registry-ids" "${registry_ids[@]}")
-  else
-    echo "~~~ Authenticating with AWS ECR"
   fi
 
   # shellcheck disable=SC2068
@@ -123,6 +124,7 @@ function login_using_aws_ecr_get_login() {
 }
 
 function login_using_aws_ecr_get_login_password() {
+  echo "~~~ Authenticating with AWS ECR :ecr: :docker:"
   local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-}}}"
   if [[ -z $region ]]; then
     region="us-east-1"
@@ -140,6 +142,8 @@ function login_using_aws_ecr_get_login_password() {
     echo >&2 "AWS account ID required via plugin config or 'aws sts get-caller-identity'"
     exit 1
   fi
+  # amend the ~~~ log heading with ^^^ to add the AWS account IDs
+  echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
   local password; password="$(aws --region "$region" ecr get-login-password)"
   for account_id in "${account_ids[@]}"; do
     docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
