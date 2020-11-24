@@ -1,3 +1,7 @@
+## [v2.2.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.1.1...v2.2.0) (2020-11-24)
+
+* Ensure a log output heading is always shown. [#55](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/55) ([pda](https://github.com/pda))
+
 ## [v2.1.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/tree/v2.1.0) (2020-03-10)
 [Full Changelog](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.0.0...v2.1.0)
 
