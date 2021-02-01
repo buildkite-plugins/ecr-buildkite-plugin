@@ -165,6 +165,52 @@ load '/usr/local/lib/bats/load.bash'
   unstub docker
 }
 
+@test "ECR login; discovered account ID, with error, and then retry until success" {
+  [[ -z $SKIP_SLOW ]] || skip "skipping slow test"
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_RETRIES=1
+  export AWS_DEFAULT_REGION=us-east-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "sts get-caller-identity --query Account --output text : echo 888888888888" \
+    "--region us-east-1 ecr get-login-password : exit 1" \
+    "--region us-east-1 ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+
+@test "ECR login; discovered account ID, with error, and then retry until failure" {
+  [[ -z $SKIP_SLOW ]] || skip "skipping slow test"
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_RETRIES=1
+  export AWS_DEFAULT_REGION=us-east-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "sts get-caller-identity --query Account --output text : echo 888888888888" \
+    "--region us-east-1 ecr get-login-password : exit 1" \
+    "--region us-east-1 ecr get-login-password : exit 1"
+
+  run "$PWD/hooks/environment"
+
+  assert_failure
+  assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
+  assert_output --partial "Login failed after 2 attempts"
+
+  unstub aws
+}
 @test "ECR login (v1.17.10; after get-login-password was added, before get-login was removed)" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
