@@ -19,34 +19,6 @@ function plugin_read_list() {
   fi
 }
 
-# Check a provided aws-cli version is greater or equal than the current
-function aws_version_ge() {
-  local current; current="$(aws --version 2>&1 | awk -F'[/ ]' '{print $2}')"
-  local wanted="$1"
-  version_a_gte_b "$current" "$wanted"
-}
-
-# Whether version A >= B, for versions in the form of major.minor.patch
-# Returns success (0) if true, and error (1) if false.
-function version_a_gte_b() {
-  IFS="." read -r -a a <<< "$1"
-  if [[ ! ${#a[@]} -eq 3 ]] ; then
-    echo "Expected $1 to be in the form x.y.z" >&2
-    exit 1
-  fi
-  IFS="." read -r -a b <<< "$2"
-  if [[ ! ${#b[@]} -eq 3 ]] ; then
-    echo "Expected $2 to be in the form x.y.z" >&2
-    exit 1
-  fi
-  [[ ${a[0]} -lt ${b[0]} ]] && return 1 # major less
-  [[ ${a[0]} -gt ${b[0]} ]] && return 0 # major more
-  [[ ${a[1]} -lt ${b[1]} ]] && return 1 # major same, minor less
-  [[ ${a[1]} -gt ${b[1]} ]] && return 0 # major same, minor more
-  [[ ${a[2]} -lt ${b[2]} ]] && return 1 # major same, minor same, patch less
-  return 0                              # major same, minor same, patch same or more
-}
-
 # Retries a command on failure.
 function retry() {
   local -r -i retries="$1"; shift
@@ -69,61 +41,7 @@ function retry() {
   done
 }
 
-# 'aws ecr get-login' was removed in awscli 2.0.0, but the alternative
-# 'aws ecr get-login-password' was not available until v1.7.10 which
-# was only released earlier that same month.
-function login_using_aws_ecr_get_login() {
-  echo "~~~ Authenticating with AWS ECR :ecr: :docker:"
-
-  # bash 3.x compatible equivalent of mapfile;
-  # https://github.com/koalaman/shellcheck/wiki/SC2207
-  registry_ids=()
-  while IFS='' read -r line; do registry_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
-
-  login_args=()
-
-  # If not specified, auto-detect if we can support no-include-email
-  if [[ -z "${BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL:-}" ]] ; then
-    if aws_version_ge "1.11.91" ; then
-      BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="true"
-    else
-      BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL="false"
-    fi
-  fi
-
-  if [[ $BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL =~ (true|on|1) ]] ; then
-    login_args+=("--no-include-email")
-  fi
-
-  if [[ -z "${AWS_DEFAULT_REGION:-}" ]] ; then
-    export AWS_DEFAULT_REGION="us-east-1"
-  fi
-
-  # In earlier versions, we supported registry-region. This is now deprecated
-  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]] ; then
-    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
-  fi
-
-  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGION:-}" ]] ; then
-    login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
-  fi
-
-  if [[ ${#registry_ids[@]} -gt 0 ]] ; then
-    # amend the ~~~ log heading with ^^^ to add the AWS account IDs
-    echo "^^^ Authenticating with AWS ECR for ${registry_ids[*]} :ecr: :docker:"
-    login_args+=("--registry-ids" "${registry_ids[@]}")
-  fi
-
-  # shellcheck disable=SC2068
-  ecr_login=$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ecr get-login ${login_args[@]+"${login_args[@]}"}) || exit $?
-
-  # despite all the horror above, if we have docker > 17.06 it still breaks...
-  ecr_login="${ecr_login//-e none/}"
-
-  eval "$ecr_login"
-}
-
-function login_using_aws_ecr_get_login_password() {
+function login() {
   echo "~~~ Authenticating with AWS ECR :ecr: :docker:"
   local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-}}}"
   if [[ -z $region ]]; then
@@ -148,16 +66,6 @@ function login_using_aws_ecr_get_login_password() {
   for account_id in "${account_ids[@]}"; do
     docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
   done
-}
-
-function login() {
-  if aws_version_ge "1.17.10"; then
-    # 'aws ecr get-login-password' was added in awscli 1.17.10
-    login_using_aws_ecr_get_login_password
-  else
-    # older awscli versions must use 'aws ecr get-login'
-    login_using_aws_ecr_get_login
-  fi
 }
 
 # For logging into the current AWS account’s registry
