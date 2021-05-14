@@ -146,7 +146,7 @@ function login_using_aws_ecr_get_login_password() {
   echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
   local password; password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region "$region" ecr get-login-password)"
   for account_id in "${account_ids[@]}"; do
-    docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
+    retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
   done
 }
 
