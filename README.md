@@ -25,7 +25,7 @@ steps:
     plugins:
       - ecr#v2.3.0:
           login: true
-          account_ids: "0015615400570"
+          account-ids: "0015615400570"
           region: "ap-southeast-2"
 ```
 
