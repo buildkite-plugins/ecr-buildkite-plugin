@@ -18,5 +18,13 @@ configuration:
       type: boolean
     region:
       type: string
+    assume-role:
+      type: object
+      properties:
+        role-arn:
+          type: string
+        duration-seconds:
+          type: number
+          default: 3600
   required:
     - login

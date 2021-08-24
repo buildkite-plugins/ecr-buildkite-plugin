@@ -160,7 +160,30 @@ function login() {
   fi
 }
 
-# For logging into the current AWS account’s registry
+function assume_role_for_ecr_login() {
+  local export_credentials
+
+  # This query creates an outer array, then multiple inner arrays of [key,value]
+  # pairs. Then it projects the outer array, and joins each inner array to form
+  # a key=value string. Printing the final array with --output text results in a
+  # string of the key=value pairs joined by space characters.
+  export_credentials="$(aws sts assume-role \
+    --role-arn "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN}" \
+    --role-session-name "ecr-login-buildkite-plugin" \
+    --duration-seconds "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_DURATION_SECONDS:-3600}" \
+    --output text \
+    --query "[['AWS_ACCESS_KEY_ID',Credentials.AccessKeyId],['AWS_SECRET_ACCESS_KEY',Credentials.SecretAccessKey],['AWS_SESSION_TOKEN',Credentials.SessionToken]][*].join(\`=\`,@)")"
+
+  #shellcheck disable=SC2086
+  export ${export_credentials?}
+}
+
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
-  login
+  (
+    if [[ -n "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN:-}" ]]; then
+      assume_role_for_ecr_login
+    fi
+
+    login
+  )
 fi
