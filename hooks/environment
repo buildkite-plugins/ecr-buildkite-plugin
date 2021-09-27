@@ -66,7 +66,6 @@ function retry() {
     exit_code=$?
     set -e
 
-    echo "$attempt_num == $retries" >&2
     if [[ $retries -eq 0 ]] || [[ $exit_code -eq 0 ]]; then
       return $exit_code
     elif (( attempt_num == max_attempts )) ; then
