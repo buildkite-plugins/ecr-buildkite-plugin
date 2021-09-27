@@ -53,11 +53,20 @@ function retry() {
   local -i max_attempts=$((retries + 1))
   local -i attempt_num=1
   local exit_code
+  local stdin_value
 
-  until "$@" ; do
+  if [[ "$1" == "--with-stdin" ]]; then
+    read -sr stdin_value
+    shift
+  fi
+
+  while (( attempt_num <= max_attempts )); do
+    set +e
+    "$@" <<< "${stdin_value:-}"
     exit_code=$?
-    echo "$attempt_num == $retries" >&2
-    if [[ $retries -eq 0 ]] ; then
+    set -e
+
+    if [[ $retries -eq 0 ]] || [[ $exit_code -eq 0 ]]; then
       return $exit_code
     elif (( attempt_num == max_attempts )) ; then
       echo "Login failed after $attempt_num attempts" >&2
@@ -146,7 +155,7 @@ function login_using_aws_ecr_get_login_password() {
   echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
   local password; password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region "$region" ecr get-login-password)"
   for account_id in "${account_ids[@]}"; do
-    docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
+    retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
   done
 }
 
