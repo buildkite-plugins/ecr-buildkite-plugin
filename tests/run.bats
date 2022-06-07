@@ -16,7 +16,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region ap-southeast-2 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -40,7 +40,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region ap-southeast-2 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -61,7 +61,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-west-2 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 421321321321.dkr.ecr.us-west-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://421321321321.dkr.ecr.us-west-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -81,7 +81,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 421321321321.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://421321321321.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
 
   run "$PWD/hooks/environment"
@@ -105,8 +105,8 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo sameforeachaccount"
 
   stub docker \
-    "login --username AWS --password-stdin 111111111111.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
-    "login --username AWS --password-stdin 222222222222.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
+    "login --username AWS --password-stdin https://111111111111.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
+    "login --username AWS --password-stdin https://222222222222.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
 
 
   run "$PWD/hooks/environment"
@@ -129,8 +129,8 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo sameforeachaccount"
 
   stub docker \
-    "login --username AWS --password-stdin 333333333333.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
-    "login --username AWS --password-stdin 444444444444.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
+    "login --username AWS --password-stdin https://333333333333.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-0 ; echo logging in to docker" \
+    "login --username AWS --password-stdin https://444444444444.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logging in to docker"
 
 
   run "$PWD/hooks/environment"
@@ -153,7 +153,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -178,7 +178,7 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -203,8 +203,8 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1" \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1" \
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -250,8 +250,8 @@ load '/usr/local/lib/bats/load.bash'
     "--region us-east-1 ecr get-login-password : echo hunter2"
 
   stub docker \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1" \
-    "login --username AWS --password-stdin 888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1"
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1" \
+    "login --username AWS --password-stdin https://888888888888.dkr.ecr.us-east-1.amazonaws.com : exit 1"
 
   run "$PWD/hooks/environment"
 
