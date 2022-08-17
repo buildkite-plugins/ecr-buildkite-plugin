@@ -117,6 +117,10 @@ function login_using_aws_ecr_get_login() {
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
   fi
 
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_PROFILE:-}" ]] ; then
+    login_args+=("--profile" "${BUILDKITE_PLUGIN_ECR_PROFILE}")
+  fi
+
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     # amend the ~~~ log heading with ^^^ to add the AWS account IDs
     echo "^^^ Authenticating with AWS ECR for ${registry_ids[*]} :ecr: :docker:"

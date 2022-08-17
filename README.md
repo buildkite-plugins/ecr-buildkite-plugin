@@ -68,6 +68,10 @@ Retries login after a delay N times. Defaults to 0.
 
 Assume an AWS IAM role before ECR login. Supports `role-arn` and `duration-seconds` (optional) per the [associated AWS CLI command.](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sts/assume-role.html)
 
+### `profile` (optional)
+
+Use a different AWS profile from the default during ECR login.
+
 ## License
 
 MIT (see [LICENSE](LICENSE))
