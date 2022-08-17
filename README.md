@@ -54,6 +54,8 @@ Either a string, or a list of strings with AWS account IDs that correspond to th
 
 ### `no-include-email` (optional)
 
+> Obsolete if using AWS CLI version 1.17.10 or newer.
+
 Add `--no-include-email` to ecr get-login. Required for docker 17.06+, but needs aws-cli 1.11.91+.
 
 ### `region` (optional)
@@ -66,7 +68,15 @@ Retries login after a delay N times. Defaults to 0.
 
 ### `assume-role` (optional)
 
+> Updates AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN environment variables.
+
 Assume an AWS IAM role before ECR login. Supports `role-arn` and `duration-seconds` (optional) per the [associated AWS CLI command.](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sts/assume-role.html)
+
+### `profile` (optional)
+
+> Requires AWS CLI version 1.17.10 or greater.
+
+Use a different AWS profile from the default during ECR login.
 
 ## License
 

@@ -26,5 +26,7 @@ configuration:
         duration-seconds:
           type: number
           default: 3600
+    profile:
+      type: string
   required:
     - login
