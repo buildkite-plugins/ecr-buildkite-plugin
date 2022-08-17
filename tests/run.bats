@@ -6,6 +6,31 @@ load '/usr/local/lib/bats/load.bash'
 
 # export AWS_STUB_DEBUG=/dev/tty
 
+@test "ECR login; configured account ID, configured region, configured profile" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export BUILDKITE_PLUGIN_ECR_PROFILE=ecr
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region ap-southeast-2 --profile ecr ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR in ap-southeast-2 for 321321321321 :ecr: :docker:"
+  assert_output --partial "logging in to docker"
+  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+
+  unstub aws
+  unstub docker
+}
+
 @test "ECR login; configured account ID, configured region" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321

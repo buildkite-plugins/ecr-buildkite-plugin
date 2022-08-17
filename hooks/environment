@@ -117,10 +117,6 @@ function login_using_aws_ecr_get_login() {
     login_args+=("--region" "${BUILDKITE_PLUGIN_ECR_REGION}")
   fi
 
-  if [[ -n "${BUILDKITE_PLUGIN_ECR_PROFILE:-}" ]] ; then
-    login_args+=("--profile" "${BUILDKITE_PLUGIN_ECR_PROFILE}")
-  fi
-
   if [[ ${#registry_ids[@]} -gt 0 ]] ; then
     # amend the ~~~ log heading with ^^^ to add the AWS account IDs
     echo "^^^ Authenticating with AWS ECR for ${registry_ids[*]} :ecr: :docker:"
@@ -144,6 +140,13 @@ function login_using_aws_ecr_get_login_password() {
     echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
     echo >&2 "Defaulting to $region for legacy compatibility."
   fi
+
+  login_args=("--region" "${region}")
+
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_PROFILE:-}" ]] ; then
+    login_args+=("--profile" "${BUILDKITE_PLUGIN_ECR_PROFILE}")
+  fi
+
   account_ids=()
   while IFS='' read -r line; do account_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
   # check if account_ids is empty, or only contains an empty string.
@@ -157,7 +160,7 @@ function login_using_aws_ecr_get_login_password() {
   fi
   # amend the ~~~ log heading with ^^^ to add the AWS account IDs
   echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
-  local password; password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region "$region" ecr get-login-password)"
+  local password; password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"
   for account_id in "${account_ids[@]}"; do
     retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
   done
