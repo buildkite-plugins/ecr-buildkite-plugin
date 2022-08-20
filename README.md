@@ -24,7 +24,7 @@ steps:
     plugins:
       - ecr#v2.6.0:
           login: true
-          account_ids: "0015615400570"
+          account-ids: "0015615400570"
           region: "ap-southeast-2"
 ```
 
@@ -38,8 +38,8 @@ steps:
           login: true
           account-ids: "0015615400570"
           region: "ap-southeast-2"
-          assume_role:
-            role_arn: "arn:aws:iam::0015615400570:role/demo"
+          assume-role:
+            role-arn: "arn:aws:iam::0015615400570:role/demo"
 ```
 
 ## Options
