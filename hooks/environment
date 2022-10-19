@@ -160,9 +160,20 @@ function login_using_aws_ecr_get_login_password() {
   fi
   # amend the ~~~ log heading with ^^^ to add the AWS account IDs
   echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
-  local password; password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"
+
+  local password;
+  local public_password;
   for account_id in "${account_ids[@]}"; do
-    retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
+    if [[ $account_id == "public.ecr.aws" ]]; then
+      # special AWS command with us-east-1 region 
+      echo "Ignoring region for $account_id and forcing us-east-1"
+      public_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region us-east-1 ecr-public get-login-password)"
+      retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin public.ecr.aws <<< "$public_password"
+    else
+      # it is only necessary to get the password once
+      password=${password:-"$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"}
+      retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$account_id.dkr.ecr.$region.amazonaws.com" <<< "$password"
+    fi
   done
 }
 
