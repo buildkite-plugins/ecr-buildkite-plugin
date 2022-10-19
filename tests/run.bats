@@ -2,9 +2,10 @@
 # shellcheck disable=SC2030,SC2031
 # (modifying vars in subshells is expected)
 
-load '/usr/local/lib/bats/load.bash'
+load "${BATS_PLUGIN_PATH}/load.bash"
 
 # export AWS_STUB_DEBUG=/dev/tty
+# export DOCKER_STUB_DEBUG=/dev/tty
 
 @test "ECR login; configured account ID, configured region, configured profile" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
@@ -25,10 +26,11 @@ load '/usr/local/lib/bats/load.bash'
   assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
   assert_output --partial "^^^ Authenticating with AWS ECR in ap-southeast-2 for 321321321321 :ecr: :docker:"
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 
 @test "ECR login; configured account ID, configured region" {
@@ -49,10 +51,11 @@ load '/usr/local/lib/bats/load.bash'
   assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
   assert_output --partial "^^^ Authenticating with AWS ECR in ap-southeast-2 for 321321321321 :ecr: :docker:"
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 
 @test "ECR login; configured account ID, configured legacy registry-region" {
@@ -71,10 +74,11 @@ load '/usr/local/lib/bats/load.bash'
 
   assert_success
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 @test "ECR login; configured account ID, AWS_DEFAULT_REGION set" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
@@ -92,10 +96,11 @@ load '/usr/local/lib/bats/load.bash'
 
   assert_success
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 @test "ECR login; configured account ID, no region specified defaults to us-east-1" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
@@ -115,9 +120,11 @@ load '/usr/local/lib/bats/load.bash'
   assert_output --partial "AWS region should be specified"
   assert_output --partial "Defaulting to us-east-1"
   assert_output --partial "logging in to docker"
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 @test "ECR login; multiple account IDs" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
@@ -138,11 +145,13 @@ load '/usr/local/lib/bats/load.bash'
 
   assert_success
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin-0) == "sameforeachaccount" ]]
-  [[ $(cat /tmp/password-stdin-1) == "sameforeachaccount" ]]
+  assert_equal "sameforeachaccount" "$(cat /tmp/password-stdin-0)"
+  assert_equal "sameforeachaccount" "$(cat /tmp/password-stdin-1)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin-0
+  rm /tmp/password-stdin-1
 }
 @test "ECR login; multiple comma-separated account IDs" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
@@ -162,12 +171,15 @@ load '/usr/local/lib/bats/load.bash'
 
   assert_success
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin-0) == "sameforeachaccount" ]]
-  [[ $(cat /tmp/password-stdin-1) == "sameforeachaccount" ]]
+  assert_equal "sameforeachaccount" "$(cat /tmp/password-stdin-0)"
+  assert_equal "sameforeachaccount" "$(cat /tmp/password-stdin-1)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin-0
+  rm /tmp/password-stdin-1
 }
+
 @test "ECR login; discovered account ID" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export AWS_DEFAULT_REGION=us-east-1
@@ -184,10 +196,11 @@ load '/usr/local/lib/bats/load.bash'
 
   assert_success
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 
 @test "ECR login; discovered account ID, with error, and then retry until success" {
@@ -210,10 +223,11 @@ load '/usr/local/lib/bats/load.bash'
   assert_success
   assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 
 @test "ECR login; discovered account ID, with error in docker login, and then retry until success" {
@@ -236,10 +250,11 @@ load '/usr/local/lib/bats/load.bash'
   assert_success
   assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
   assert_output --partial "logging in to docker"
-  [[ $(cat /tmp/password-stdin) == "hunter2" ]]
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
 
   unstub aws
   unstub docker
+  rm /tmp/password-stdin
 }
 
 @test "ECR login; discovered account ID, with error, and then retry until failure" {
