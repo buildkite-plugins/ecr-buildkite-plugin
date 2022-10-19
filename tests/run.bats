@@ -543,7 +543,6 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   assert_success
   assert_output --partial "logging in to docker"
   assert_equal "public" "$(cat /tmp/password-stdin)"
-  assert_failure
 
   unstub aws
   unstub docker
