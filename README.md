@@ -52,6 +52,8 @@ Whether to login to your account's ECR.
 
 Either a string, or a list of strings with AWS account IDs that correspond to the Amazon ECR registries that you want to log in to. Make sure to quote these if they start with a 0.
 
+You can use the literal `public.ecr.aws` as a value to authenticate against AWS ECR public registries.
+
 ### `no-include-email` (optional)
 
 > Obsolete if using AWS CLI version 1.17.10 or newer.
