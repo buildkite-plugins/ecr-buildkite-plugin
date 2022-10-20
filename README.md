@@ -12,7 +12,7 @@ This will login docker to ECR prior to running your script.
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.6.0:
+      - ecr#v2.7.0:
           login: true
 ```
 
@@ -22,7 +22,7 @@ If you want to log in to ECR on [another account](https://docs.aws.amazon.com/Am
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.6.0:
+      - ecr#v2.7.0:
           login: true
           account_ids: "0015615400570"
           region: "ap-southeast-2"
@@ -34,7 +34,7 @@ If you need to assume a role to perform that login:
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.6.0:
+      - ecr#v2.7.0:
           login: true
           account-ids: "0015615400570"
           region: "ap-southeast-2"
@@ -51,6 +51,10 @@ Whether to login to your account's ECR.
 ### `account-ids` (optional)
 
 Either a string, or a list of strings with AWS account IDs that correspond to the Amazon ECR registries that you want to log in to. Make sure to quote these if they start with a 0.
+
+You can use the literal `public.ecr.aws` as a value to authenticate against AWS ECR public registries.
+
+:warning: If you are using [ECR Credential Helper](https://github.com/awslabs/amazon-ecr-credential-helper/) in your docker configuration it is possible you have to add `https://` to your account IDs to prevent an error (see the [corresponding bug report](https://github.com/docker/cli/issues/3665) for more information).
 
 ### `no-include-email` (optional)
 

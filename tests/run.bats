@@ -80,6 +80,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   unstub docker
   rm /tmp/password-stdin
 }
+
 @test "ECR login; configured account ID, AWS_DEFAULT_REGION set" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=421321321321
@@ -102,6 +103,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   unstub docker
   rm /tmp/password-stdin
 }
+
 @test "ECR login; configured account ID, no region specified defaults to us-east-1" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=421321321321
@@ -126,6 +128,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   unstub docker
   rm /tmp/password-stdin
 }
+
 @test "ECR login; multiple account IDs" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=111111111111
@@ -153,6 +156,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   rm /tmp/password-stdin-0
   rm /tmp/password-stdin-1
 }
+
 @test "ECR login; multiple comma-separated account IDs" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=333333333333,444444444444
@@ -519,4 +523,28 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   unstub aws
   unstub docker
+}
+
+@test "ECR login; public registry even in other regions" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=public.ecr.aws
+  export AWS_DEFAULT_REGION=us-west-2
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region us-east-1 ecr-public get-login-password : echo public"
+
+  stub docker \
+    "login --username AWS --password-stdin public.ecr.aws : cat > /tmp/password-stdin ; echo logging in to docker"
+
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  assert_equal "public" "$(cat /tmp/password-stdin)"
+
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
 }
