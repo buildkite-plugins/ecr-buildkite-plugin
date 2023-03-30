@@ -1,16 +1,15 @@
 steps:
   - label: ":shell: Tests"
     plugins:
-      docker-compose#v4.5.0:
-        run: tests
+      - plugin-tester#v1.0.0: ~
 
   - label: ":sparkles: Lint"
     plugins:
-      plugin-linter#v3.0.0:
-        id: ecr
+      - plugin-linter#v3.0.0:
+          id: ecr
 
   - label: ":shell: Shellcheck"
     plugins:
-      shellcheck#v1.3.0:
-        files: hooks/**
+      - shellcheck#v1.3.0:
+          files: hooks/**
     skip: "Shellcheck doesn't pass right now"
