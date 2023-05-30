@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
-load '/usr/local/lib/bats/load.bash'
+
+load "${BATS_PLUGIN_PATH}/load.bash"
+
 load "$PWD/hooks/environment"
 
 @test "version_a_gte_b: basic: major less; false" {
