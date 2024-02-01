@@ -187,6 +187,39 @@ function login() {
   fi
 }
 
+function assume_role_via_oidc_for_ecr_login() {
+  local export_credentials
+
+  echo "~~~ :buildkite::key::aws: Requesting an OIDC token for AWS from buildkite"
+
+  BUILDKITE_OIDC_TOKEN="$(buildkite-agent oidc request-token --audience sts.amazonaws.com)"
+
+  echo "~~~ :aws: Assuming role using OIDC token"
+
+  # This query creates an outer array, then multiple inner arrays of [key,value]
+  # pairs. Then it projects the outer array, and joins each inner array to form
+  # a key=value string. Printing the final array with --output text results in a
+  # string of the key=value pairs joined by space characters.
+  export_credentials="$(aws sts assume-role-with-web-identity \
+    --role-arn "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN}" \
+    --role-session-name "ecr-login-buildkite-plugin" \
+    --duration-seconds "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_DURATION_SECONDS:-3600}" \
+    --web-identity-token "${BUILDKITE_OIDC_TOKEN}" \
+    --output text \
+    --query "[['AWS_ACCESS_KEY_ID',Credentials.AccessKeyId],['AWS_SECRET_ACCESS_KEY',Credentials.SecretAccessKey],['AWS_SESSION_TOKEN',Credentials.SessionToken]][*].join(\`=\`,@)")"
+
+  #shellcheck disable=SC2181
+  if [[ $? -ne 0 ]]; then
+    echo "^^^ +++"
+    echo "Failed to assume AWS role:"
+    echo "${export_credentials}"
+    exit 1
+  fi
+
+  #shellcheck disable=SC2086
+  export ${export_credentials?}
+}
+
 function assume_role_for_ecr_login() {
   local export_credentials
 
@@ -208,7 +241,11 @@ function assume_role_for_ecr_login() {
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
   (
     if [[ -n "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN:-}" ]]; then
-      assume_role_for_ecr_login
+      if [[ -n "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC:-}" ]]; then
+        assume_role_via_oidc_for_ecr_login
+      else
+        assume_role_for_ecr_login
+      fi
     fi
 
     login
