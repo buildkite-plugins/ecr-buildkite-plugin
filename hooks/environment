@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+echo "Retries: ${BUILDKITE_PLUGIN_ECR_RETRIES:-0}"
+
 # Reads either a value or a list from plugin config
 function plugin_read_list() {
   local prefix="BUILDKITE_PLUGIN_ECR_$1"
@@ -60,13 +62,19 @@ function retry() {
     shift
   fi
 
+  echo "Trying ECR login with max ${max_attempts} attempts"
+
+  set -x
   while (( attempt_num <= max_attempts )); do
     set +e
+    # This is getting caught by the 'trap' command in the caller
     "$@" <<< "${stdin_value:-}"
     exit_code=$?
     set -e
 
     if [[ $retries -eq 0 ]] || [[ $exit_code -eq 0 ]]; then
+      echo "retries: $retries"
+      echo "exit_code: $exit_code"
       return $exit_code
     elif (( attempt_num == max_attempts )) ; then
       echo "Login failed after $attempt_num attempts" >&2
@@ -177,6 +185,11 @@ function login_using_aws_ecr_get_login_password() {
   done
 }
 
+function busted_login() {
+  retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" ./fail.sh
+
+}
+
 function login() {
   if aws_version_ge "1.17.10"; then
     # 'aws ecr get-login-password' was added in awscli 1.17.10
@@ -211,6 +224,6 @@ if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
       assume_role_for_ecr_login
     fi
 
-    login
+    busted_login
   )
 fi
