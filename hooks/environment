@@ -65,13 +65,26 @@ function version_a_gte_b() {
 # We need to do this in a wrapper because by the time we are executing _retry, it's too late to unset the error trap.
 #
 function retry() {
+  local -r -i retries="$1"; shift
+  local exit_code
+  local stdin_value
+  local with_stdin_flag=""
+
+  if [[ "$1" == "--with-stdin" ]]; then
+    with_stdin_flag=" --with-stdin"
+    read -sr stdin_value
+    shift
+  fi
+
   [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set +E
 
-  status=$(_retry $@)
+  #shellcheck disable=SC2086
+  _retry "$retries" ${with_stdin_flag} "$@" <<< "${stdin_value:-}"
+  exit_code=$?
 
   [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set -E
 
-  return $status
+  return $exit_code
 }
 
 # Retries a command on failure.
