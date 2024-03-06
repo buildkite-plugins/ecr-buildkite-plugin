@@ -70,16 +70,16 @@ function retry() {
   local stdin_value
   local with_stdin_flag=""
 
+  cmd=(_retry "$retries")
   if [[ "$1" == "--with-stdin" ]]; then
-    with_stdin_flag=" --with-stdin"
+    cmd=+(--with-stdin)
     read -sr stdin_value
     shift
   fi
 
   [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set +E
 
-  #shellcheck disable=SC2086
-  _retry "$retries" ${with_stdin_flag} "$@" <<< "${stdin_value:-}"
+  "${cmd[@]}" "$@" <<< "${stdin_value:-}"
   exit_code=$?
 
   [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set -E
