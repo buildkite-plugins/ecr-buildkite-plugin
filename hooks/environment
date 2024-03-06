@@ -72,7 +72,7 @@ function retry() {
 
   cmd=(_retry "$retries")
   if [[ "$1" == "--with-stdin" ]]; then
-    cmd=+(--with-stdin)
+    cmd+=(--with-stdin)
     read -sr stdin_value
     shift
   fi
