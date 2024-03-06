@@ -68,7 +68,6 @@ function retry() {
   local -r -i retries="$1"; shift
   local exit_code
   local stdin_value
-  local with_stdin_flag=""
 
   cmd=(_retry "$retries")
   if [[ "$1" == "--with-stdin" ]]; then
