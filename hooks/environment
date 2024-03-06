@@ -5,13 +5,13 @@ set -eu -o pipefail
 #
 # First we detect whether the `-E` option is set. This matters because when `-E` is combined with an error trap (as in the agent environment hook), it breaks this hook's retry functionality.
 #
-# The special $- variable is a list of all the options currently set. We find out if it contains 'E', and store the result in IS_BIG_E_OPTION_SET.
+# The special $- variable is a list of all the options currently set. We find out if it contains 'E', and store the result in WAS_BIG_E_OPTION_SET_AT_START.
 #
-# We'll use IS_BIG_E_OPTION_SET later on, to decide if we need to remove and reinstate it around retries.
+# We'll use WAS_BIG_E_OPTION_SET_AT_START later on, to decide if we need to remove and reinstate it around retries.
 #
-IS_BIG_E_OPTION_SET=no
+WAS_BIG_E_OPTION_SET_AT_START=no
 if [[ "$-" =~ "E" ]]; then
-  IS_BIG_E_OPTION_SET=yes
+  WAS_BIG_E_OPTION_SET_AT_START=yes
 fi
 
 # Reads either a value or a list from plugin config
@@ -77,12 +77,12 @@ function retry() {
     shift
   fi
 
-  [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set +E
+  [[ "$WAS_BIG_E_OPTION_SET_AT_START" == "yes" ]] && set +E
 
   "${cmd[@]}" "$@" <<< "${stdin_value:-}"
   exit_code=$?
 
-  [[ "$IS_BIG_E_OPTION_SET" == "yes" ]] && set -E
+  [[ "$WAS_BIG_E_OPTION_SET_AT_START" == "yes" ]] && set -E
 
   return $exit_code
 }
