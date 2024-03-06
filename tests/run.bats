@@ -580,3 +580,25 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   rm /tmp/password-stdin
 }
 
+@test "Set error trap; source env hook; ECR login; discovered account ID, with error, and then retry until failure" {
+  [[ -z $SKIP_SLOW ]] || skip "skipping slow test"
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_RETRIES=1
+  export AWS_DEFAULT_REGION=us-east-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "sts get-caller-identity --query Account --output text : echo 888888888888" \
+    "--region us-east-1 ecr get-login-password : exit 1" \
+    "--region us-east-1 ecr get-login-password : exit 1"
+
+  run $PWD/tests/jigs/trap-and-source-env-hook.sh
+
+  assert_failure
+
+  assert_output --partial "Login failed on attempt 1 of 2. Trying again in 1 seconds.."
+  assert_output --partial "Login failed after 2 attempts"
+  assert_output --partial "TRAP TRIGGERED"
+
+  unstub aws
+}
