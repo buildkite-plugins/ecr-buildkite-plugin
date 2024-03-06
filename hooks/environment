@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -eu -o pipefail
 
+# Some callers slightly abuse this script by including it via Bash's `source` command, instead of calling it as an executable. This means this code is sometimes executed with extra Bash context (namely options and error traps) that change how the code is interpreted. This interference is not always desirable, but unfortunately we must tolerate usage via `source`.
+#
+# First we detect whether the `-E` option is set. This matters because when `-E` is combined with an error trap (as in the agent environment hook), it breaks this hook's retry functionality.
+#
+# The special $- variable is a list of all the options currently set. We find out if it contains 'E', and store the result in WAS_BIG_E_OPTION_SET_AT_START.
+#
+# We'll use WAS_BIG_E_OPTION_SET_AT_START later on, to decide if we need to remove and reinstate it around retries.
+#
+WAS_BIG_E_OPTION_SET_AT_START=no
+if [[ "$-" =~ "E" ]]; then
+  WAS_BIG_E_OPTION_SET_AT_START=yes
+fi
+
 # Reads either a value or a list from plugin config
 function plugin_read_list() {
   local prefix="BUILDKITE_PLUGIN_ECR_$1"
@@ -47,8 +60,34 @@ function version_a_gte_b() {
   return 0                              # major same, minor same, patch same or more
 }
 
-# Retries a command on failure.
+# Bash's -E option propagates error traps into called functions. In the case of the `_retry` function, we don't want to do that because if we interrupt execution on an error, it becomes impossible to retry.
+#
+# We need to do this in a wrapper because by the time we are executing _retry, it's too late to unset the error trap.
+#
 function retry() {
+  local -r -i retries="$1"; shift
+  local exit_code
+  local stdin_value
+
+  cmd=(_retry "$retries")
+  if [[ "$1" == "--with-stdin" ]]; then
+    cmd+=(--with-stdin)
+    read -sr stdin_value
+    shift
+  fi
+
+  [[ "$WAS_BIG_E_OPTION_SET_AT_START" == "yes" ]] && set +E
+
+  "${cmd[@]}" "$@" <<< "${stdin_value:-}"
+  exit_code=$?
+
+  [[ "$WAS_BIG_E_OPTION_SET_AT_START" == "yes" ]] && set -E
+
+  return $exit_code
+}
+
+# Retries a command on failure.
+function _retry() {
   local -r -i retries="$1"; shift
   local -i max_attempts=$((retries + 1))
   local -i attempt_num=1
