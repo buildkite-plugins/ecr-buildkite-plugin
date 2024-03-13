@@ -23,6 +23,8 @@ configuration:
       properties:
         role-arn:
           type: string
+        oidc:
+          type: boolean
         duration-seconds:
           type: number
           default: 3600

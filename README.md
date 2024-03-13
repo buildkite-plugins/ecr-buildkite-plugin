@@ -42,6 +42,22 @@ steps:
             role_arn: "arn:aws:iam::0015615400570:role/demo"
 ```
 
+It's also possible to assume a role using OIDC. This will call `buildkite-agent oidc request-token --audience sts.amazonaws.com`
+and exchange the resulting token for AWS credentials which are then used for the ECR login
+
+```yml
+steps:
+  - command: ./run_build.sh
+    plugins:
+      - ecr#v2.7.0:
+          login: true
+          account-ids: "0015615400570"
+          region: "ap-southeast-2"
+          assume_role:
+            role_arn: "arn:aws:iam::0015615400570:role/demo"
+            oidc: true
+```
+
 ## Options
 
 ### `login`
@@ -75,6 +91,10 @@ Retries login after a delay N times. Defaults to 0.
 > Updates AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN environment variables.
 
 Assume an AWS IAM role before ECR login. Supports `role-arn` and `duration-seconds` (optional) per the [associated AWS CLI command.](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sts/assume-role.html)
+
+By default the role is assumed using the AWS IAM `AssumeRole` process. It's
+also possible to assume the role using OIDC and the AWS IAM
+`AssumeRoleWithWebIdentity` process, by passing: `oidc: true`
 
 ### `profile` (optional)
 
