@@ -155,7 +155,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   rm /tmp/password-stdin
 }
 
-@test "ECR login; configured account ID, configured region" {
+@test "ECR login; configured account ID, configured China region" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
   export BUILDKITE_PLUGIN_ECR_REGION=cn-north-1
