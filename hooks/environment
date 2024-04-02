@@ -219,7 +219,7 @@ function login_using_aws_ecr_get_login_password() {
     else
       # it is only necessary to get the password once
       password=${password:-"$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"}
-      retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$ecr_registry_url" <<< "$password" 
+      retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$ecr_registry_url" <<< "$password"
     fi
   done
 }
