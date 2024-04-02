@@ -201,7 +201,7 @@ function login_using_aws_ecr_get_login_password() {
   echo "^^^ Authenticating with AWS ECR in $region for ${account_ids[*]} :ecr: :docker:"
 
   local ecr_registry_url;
-  if [[ $(region:0:3) == "cn-" ]]; then
+  if [[ ${region:0:3} == "cn-" ]]; then
     # the ecr registry in China regions has a different URL
     ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
   else
