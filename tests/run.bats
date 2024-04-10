@@ -129,6 +129,57 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   rm /tmp/password-stdin
 }
 
+@test "ECR login; configured account ID, configured China region, configured profile" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=cn-north-1
+  export BUILDKITE_PLUGIN_ECR_PROFILE=ecr
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region cn-north-1 --profile ecr ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.cn-north-1.amazonaws.com.cn : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR in cn-north-1 for 321321321321 :ecr: :docker:"
+  assert_output --partial "logging in to docker"
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
+
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
+}
+
+@test "ECR login; configured account ID, configured China region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=cn-north-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region cn-north-1 ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.cn-north-1.amazonaws.com.cn : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR in cn-north-1 for 321321321321 :ecr: :docker:"
+  assert_output --partial "logging in to docker"
+  assert_equal "hunter2" "$(cat /tmp/password-stdin)"
+
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
+}
+
 @test "ECR login; multiple account IDs" {
   export BUILDKITE_PLUGIN_ECR_LOGIN=true
   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=111111111111
