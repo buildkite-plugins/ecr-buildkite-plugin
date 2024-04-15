@@ -1,14 +1,20 @@
 steps:
   - label: ":shell: Tests"
+    agents:
+      queue: "hosted"
     plugins:
       - plugin-tester#v1.1.1: ~
 
   - label: ":sparkles: Lint"
+    agents:
+      queue: "hosted"
     plugins:
       - plugin-linter#v3.3.0:
           id: ecr
 
   - label: ":shell: Shellcheck"
+    agents:
+      queue: "hosted"
     plugins:
       - shellcheck#v1.3.0:
           files: hooks/**
