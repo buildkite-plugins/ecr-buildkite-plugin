@@ -1,3 +1,8 @@
+# WARNING! This plugin is being deprecated in favor of the officially maintained buildkite ECR plugin found here: https://github.com/buildkite-plugins/ecr-buildkite-plugin
+# DO NOT USE!
+
+
+
 # ECR Buildkite Plugin [![Build status](https://badge.buildkite.com/152a3248fa274dab20f022ff7b68e9de96a4fc3388de29d013.svg?branch=master)](https://buildkite.com/buildkite/plugins-ecr)
 
 A [Buildkite plugin](https://buildkite.com/docs/agent/v3/plugins) to login to an ECR repository before running a build step.
