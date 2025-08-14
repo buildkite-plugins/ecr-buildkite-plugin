@@ -1,3 +1,9 @@
+## [v2.9.1](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.9.0...v2.9.1) (2025-08-14)
+
+### Fixed
+
+- Fix AWS CLI version parsing [#115](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/115)
+
 ## [v2.2.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.1.1...v2.2.0) (2020-11-24)
 
 * Ensure a log output heading is always shown. [#55](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/55) ([pda](https://github.com/pda))
