@@ -84,3 +84,10 @@ load "$PWD/hooks/environment"
   assert_success
   unset -f aws
 }
+
+@test "aws_version_ge: fails when AWS CLI is not installed" {
+  export PATH="/bin:/usr/bin"
+  run aws_version_ge "1.0.0"
+  assert_failure
+  assert_output --partial "Error: AWS CLI is not installed or not in PATH"
+}
