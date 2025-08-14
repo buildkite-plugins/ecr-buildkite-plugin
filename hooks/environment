@@ -33,9 +33,25 @@ function plugin_read_list() {
 }
 
 # Check a provided aws-cli version is greater or equal than the current
+# Search for SemVer in the string, handling directory paths in AWS CLI output
+# This will also account for any potential symlinks/virtual environments
 function aws_version_ge() {
-  local current; current="$(aws --version 2>&1 | awk -F'[/ ]' '{print $2}')"
+  local aws_output; aws_output="$(aws --version 2>&1 | head -n1)"
+  # Match SemVer x.x.x format anywhere after aws-cli/, skipping non-numeric prefixes like "workspace/" that we've seen in a bug report
+  local current; current="$(echo "$aws_output" | sed -n 's/^aws-cli\/[^0-9]*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/p')"
   local wanted="$1"
+
+  # If we couldn't parse the version with the robust method, then we'll try the old method as fallback (although, we should never get here... but just in case)
+  if [[ -z "$current" ]]; then
+    current="$(echo "$aws_output" | awk -F'[/ ]' '{print $2}')"
+  fi
+
+  # Throw verbose output if version parsing fails so we can debug more accurately
+  if [[ -z "$current" ]]; then
+    echo "Could not parse AWS CLI version from output: $aws_output" >&2
+    return 1
+  fi
+
   version_a_gte_b "$current" "$wanted"
 }
 
@@ -204,7 +220,7 @@ function login_using_aws_ecr_get_login_password() {
   local public_password;
   for account_id in "${account_ids[@]}"; do
     if [[ $account_id == "public.ecr.aws" ]]; then
-      # special AWS command with us-east-1 region 
+      # special AWS command with us-east-1 region
       echo "Ignoring region for $account_id and forcing us-east-1"
       public_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region us-east-1 ecr-public get-login-password)"
       retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin public.ecr.aws <<< "$public_password"
