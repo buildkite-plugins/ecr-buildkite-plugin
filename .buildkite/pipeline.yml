@@ -11,7 +11,9 @@ steps:
   - label: ":shell: Shellcheck"
     plugins:
       - shellcheck#v1.4.0:
-          files: hooks/**
+          files:
+            - hooks/**
+            - lib/**
 
   - label: "Security Scan"
     key: security_scan

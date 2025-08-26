@@ -653,3 +653,138 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   unstub aws
 }
+
+@test "ECR credential helper; configured account ID, configured region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "Configured ECR credential helper for 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com"
+  assert_output --partial "ECR credential helper configured successfully"
+  assert_output --partial "ECR credential helper is now active for Docker operations"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; public ECR registry" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=public.ecr.aws
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "Configured ECR credential helper for public.ecr.aws"
+  assert_output --partial "ECR credential helper configured successfully"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; multiple account IDs" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=111111111111
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_1=public.ecr.aws
+  export BUILDKITE_PLUGIN_ECR_REGION=us-east-1
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Configured ECR credential helper for 111111111111.dkr.ecr.us-east-1.amazonaws.com"
+  assert_output --partial "Configured ECR credential helper for public.ecr.aws"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; discovered account ID" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export AWS_DEFAULT_REGION=us-east-1
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub aws \
+    "sts get-caller-identity --query Account --output text : echo 888888888888"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "Configured ECR credential helper for 888888888888.dkr.ecr.us-east-1.amazonaws.com"
+
+  unstub aws
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; China region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=cn-north-1
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Configured ECR credential helper for 321321321321.dkr.ecr.cn-north-1.amazonaws.com.cn"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; invalid JSON config" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo 'invalid json' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_failure
+  assert_output --partial "Error: Invalid JSON in Docker config file"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
