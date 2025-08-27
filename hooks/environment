@@ -1,5 +1,10 @@
-#!/usr/bin/env bash
-set -eu -o pipefail
+#!/bin/bash
+set -euo pipefail
+
+DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+# shellcheck source=lib/credential-helper.bash
+. "$DIR/../lib/credential-helper.bash"
 
 # Some callers slightly abuse this script by including it via Bash's `source` command, instead of calling it as an executable. This means this code is sometimes executed with extra Bash context (namely options and error traps) that change how the code is interpreted. This interference is not always desirable, but unfortunately we must tolerate usage via `source`.
 #
@@ -245,7 +250,10 @@ function login_using_aws_ecr_get_login_password() {
 }
 
 function login() {
-  if aws_version_ge "1.17.10"; then
+  # Check if ECR credential helper is enabled
+  if [[ "${BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER:-}" =~ ^(true|1)$ ]]; then
+    login_using_ecr_credential_helper
+  elif aws_version_ge "1.17.10"; then
     # 'aws ecr get-login-password' was added in awscli 1.17.10
     login_using_aws_ecr_get_login_password
   else
@@ -272,8 +280,9 @@ function assume_role_for_ecr_login() {
   export ${export_credentials?}
 }
 
-if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-}" =~ ^(true|1)$ ]] ; then
+if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-true}" =~ ^(true|1)$ ]] ; then
   (
+    # Assume role first if specified, so credential helper uses correct credentials
     if [[ -n "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN:-}" ]]; then
       assume_role_for_ecr_login
     fi

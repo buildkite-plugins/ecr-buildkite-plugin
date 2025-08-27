@@ -2,6 +2,9 @@
 
 load "${BATS_PLUGIN_PATH}/load.bash"
 
+# Disable login before sourcing to prevent execution during test setup
+export BUILDKITE_PLUGIN_ECR_LOGIN=false
+
 load "$PWD/hooks/environment"
 
 @test "version_a_gte_b: basic: major less; false" {
