@@ -3,8 +3,8 @@ set -euo pipefail
 
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-# shellcheck source=lib/shared.bash
-. "$DIR/../lib/shared.bash"
+# shellcheck source=lib/credential-helper.bash
+. "$DIR/../lib/credential-helper.bash"
 
 # Some callers slightly abuse this script by including it via Bash's `source` command, instead of calling it as an executable. This means this code is sometimes executed with extra Bash context (namely options and error traps) that change how the code is interpreted. This interference is not always desirable, but unfortunately we must tolerate usage via `source`.
 #
