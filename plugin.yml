@@ -9,6 +9,7 @@ configuration:
   properties:
     login:
       type: boolean
+      default: true
     credential-helper:
       type: boolean
     account-ids:
@@ -30,5 +31,4 @@ configuration:
           default: 3600
     profile:
       type: string
-  required:
-    - login
+  required: []
