@@ -114,13 +114,7 @@ Use a different AWS profile from the default during ECR login.
 
 ## Developing
 
-To run testing, shellchecks and plugin linting use `bk run` with the [Buildkite CLI](https://github.com/buildkite/cli).
-
-```bash
-bk run
-```
-
-Or if you want to run just the tests, you can use the docker [Plugin Tester](https://github.com/buildkite-plugins/buildkite-plugin-tester):
+Use docker to run the [Plugin Tester](https://github.com/buildkite-plugins/buildkite-plugin-tester):
 
 ```bash
 docker run --rm -ti -v "${PWD}":/plugin buildkite/plugin-tester:latest
