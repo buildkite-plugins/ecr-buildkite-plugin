@@ -70,6 +70,8 @@ function setup_ecr_credential_helper() {
   # Atomic move to prevent race conditions with other processes
   if mv "$tmp_file" "$docker_config_file"; then
     echo "ECR credential helper configured successfully"
+		ls -lah $docker_config_file
+		cat $docker_config_file
     return 0
   else
     echo "Error: Failed to update Docker config file: $docker_config_file" >&2
