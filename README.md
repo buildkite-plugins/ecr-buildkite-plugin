@@ -12,7 +12,7 @@ This will perform a `docker login` to your ECR registries prior to running your 
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.9.1: ~
+      - ecr#v2.10.0: ~
 ```
 
 If you want to log in to ECR on [another account](https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-policy-examples.html#IAM_allow_other_accounts):
@@ -21,7 +21,7 @@ If you want to log in to ECR on [another account](https://docs.aws.amazon.com/Am
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.9.1:
+      - ecr#v2.10.0:
           account-ids: "0015615400570"
           region: "ap-southeast-2"
 ```
@@ -32,7 +32,7 @@ If you need to assume a role to perform that login:
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.9.1:
+      - ecr#v2.10.0:
           account-ids: "0015615400570"
           region: "ap-southeast-2"
           assume_role:
@@ -47,7 +47,7 @@ You can use the [Amazon ECR credential helper](https://github.com/awslabs/amazon
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.9.1:
+      - ecr#v2.10.0:
           credential-helper: true
 ```
 
@@ -57,7 +57,7 @@ The credential helper works with any ECR registries you have access to, without 
 steps:
   - command: ./run_build.sh
     plugins:
-      - ecr#v2.9.1:
+      - ecr#v2.10.0:
           credential-helper: true
           account-ids:
             - "123456789012"

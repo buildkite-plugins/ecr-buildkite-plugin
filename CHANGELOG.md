@@ -1,3 +1,14 @@
+## [v2.10.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.9.1...v2.10.0) (2025-08-29)
+
+### Added
+
+- Add option to use AWS ECR Credential Helper [#118](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/118) (@petetomasik)
+
+### Changed
+
+- Default login config to true (plugin is essentially a no-op if false) [#118](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/118) (@petetomasik)
+- Update buildkite plugin ossf-scorecard to v1.0.1 [#117](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/117) (@renovate[bot])
+
 ## [v2.9.1](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.9.0...v2.9.1) (2025-08-14)
 
 ### Fixed
