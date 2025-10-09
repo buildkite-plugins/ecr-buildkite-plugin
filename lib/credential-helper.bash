@@ -40,28 +40,28 @@ function setup_ecr_credential_helper() {
     return 1
   fi
   
-  # Start with existing config and ensure credHelpers object exists
-  jq '.credHelpers = (.credHelpers // {})' "$docker_config_file" > "$tmp_file"
-  
+  # Start with existing config and ensure credHelpers and auths objects exist
+  jq '.credHelpers = (.credHelpers // {}) | .auths = (.auths // {})' "$docker_config_file" > "$tmp_file"
+
   # Configure credential helper for each ECR registry
   for account_id in "${account_ids[@]}"; do
     if [[ -n "$account_id" ]]; then
       if [[ "$account_id" == "public.ecr.aws" ]]; then
         # Configure for ECR Public
-        jq --arg registry "$account_id" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
+        jq --arg registry "$account_id" '.credHelpers[$registry] = "ecr-login" | .auths[$registry] = {}' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
         echo "Configured ECR credential helper for $account_id"
       else
         # Configure for private ECR registries
         local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}}"
         local ecr_registry_url
-        
+
         if [[ ${region:0:3} == "cn-" ]]; then
           ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
         else
           ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com"
         fi
-        
-        jq --arg registry "$ecr_registry_url" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
+
+        jq --arg registry "$ecr_registry_url" '.credHelpers[$registry] = "ecr-login" | .auths[$registry] = {}' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
         echo "Configured ECR credential helper for $ecr_registry_url"
       fi
     fi
