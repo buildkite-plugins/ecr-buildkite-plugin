@@ -81,7 +81,15 @@ function setup_ecr_credential_helper() {
 # Login using ECR credential helper by configuring Docker
 function login_using_ecr_credential_helper() {
   echo "~~~ Configuring ECR credential helper :ecr: :docker:"
-  
+
+  # Set AWS_ECR_IGNORE_CREDS_STORAGE (defaults to true)
+  # Only skip if explicitly set to false/0
+  if [[ "${BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER_IGNORE_CREDS_STORAGE:-true}" =~ ^(false|0)$ ]]; then
+    echo "AWS_ECR_IGNORE_CREDS_STORAGE is disabled"
+  else
+    export AWS_ECR_IGNORE_CREDS_STORAGE=true
+  fi
+
   if ! command -v docker-credential-ecr-login >/dev/null 2>&1; then
     echo "Error: docker-credential-ecr-login not found in PATH" >&2
     echo "Please install the Amazon ECR credential helper: https://github.com/awslabs/amazon-ecr-credential-helper" >&2

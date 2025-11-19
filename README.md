@@ -64,6 +64,17 @@ steps:
             - "public.ecr.aws"
 ```
 
+By default, the credential helper suppresses credential storage errors. The ECR credential helper provides credentials on-demand to Docker rather than storing them persistently, so Docker's store/delete operations aren't applicable. If you want to see these error messages, you can disable this behavior:
+
+```yml
+steps:
+  - command: ./run_build.sh
+    plugins:
+      - ecr#v2.10.0:
+          credential-helper: true
+          credential-helper-ignore-creds-storage: false
+```
+
 ## Options
 
 ### `login` (optional)
@@ -75,6 +86,16 @@ Whether to login to your account's ECR. Defaults to `true`. Set to `false` to di
 Use the [Amazon ECR credential helper](https://github.com/awslabs/amazon-ecr-credential-helper) instead of AWS CLI ECR login methods.
 
 **Requires** the `amazon-ecr-credential-helper` binary to be installed and available in `PATH`.
+
+### `credential-helper-ignore-creds-storage` (optional)
+
+When using the ECR credential helper, this option controls the `AWS_ECR_IGNORE_CREDS_STORAGE` environment variable. **Defaults to `true`**.
+
+The ECR credential helper provides credentials on-demand to Docker rather than storing them persistently. Docker's credential store and delete operations don't apply to this workflow. When set to `true` (the default), the credential helper silently ignores (returns success for) these store/delete operations rather than returning errors. This prevents benign error messages during `docker login` and `docker logout` operations.
+
+You can set this to `false` if you want to see the error messages when Docker attempts these operations, though this is generally not recommended as the errors are expected and harmless.
+
+**Note**: This option only applies when `credential-helper: true` is set.
 
 ### `account-ids` (optional)
 
