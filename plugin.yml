@@ -12,6 +12,9 @@ configuration:
       default: true
     credential-helper:
       type: boolean
+    credential-helper-ignore-creds-storage:
+      type: boolean
+      default: true
     account-ids:
       type:
         - string

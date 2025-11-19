@@ -1,3 +1,9 @@
+## [v2.11.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.10.0...v2.11.0) (2025-11-19)
+
+### Added
+
+- Set AWS_ECR_IGNORE_CREDS_STORAGE=true by default [#122](https://github.com/buildkite-plugins/ecr-buildkite-plugin/pull/122) (@petetomasik)
+
 ## [v2.10.0](https://github.com/buildkite-plugins/ecr-buildkite-plugin/compare/v2.9.1...v2.10.0) (2025-08-29)
 
 ### Added

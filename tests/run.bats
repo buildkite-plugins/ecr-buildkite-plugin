@@ -788,3 +788,75 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   unstub docker-credential-ecr-login
   rm -rf "$HOME/.docker"
 }
+
+@test "ECR credential helper; with ignore-creds-storage explicitly enabled" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER_IGNORE_CREDS_STORAGE=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "Configured ECR credential helper for 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com"
+  assert_output --partial "ECR credential helper configured successfully"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; with ignore-creds-storage disabled" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER_IGNORE_CREDS_STORAGE=false
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "AWS_ECR_IGNORE_CREDS_STORAGE is disabled"
+  assert_output --partial "Configured ECR credential helper for 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR credential helper; with ignore-creds-storage set to 0" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER_IGNORE_CREDS_STORAGE=0
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "AWS_ECR_IGNORE_CREDS_STORAGE is disabled"
+  assert_output --partial "Configured ECR credential helper for 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com"
+
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
