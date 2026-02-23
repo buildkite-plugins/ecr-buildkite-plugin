@@ -32,6 +32,9 @@ configuration:
         duration-seconds:
           type: number
           default: 3600
+        oidc:
+          type: boolean
+          default: false
     profile:
       type: string
   required: []

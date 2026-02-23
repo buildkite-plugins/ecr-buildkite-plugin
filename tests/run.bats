@@ -860,3 +860,145 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   unstub docker-credential-ecr-login
   rm -rf "$HOME/.docker"
 }
+
+@test "ECR login; assume role with OIDC, configured account ID, configured region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=123456789012
+  export BUILDKITE_PLUGIN_ECR_REGION=ap-southeast-2
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN=arn:aws:iam::123456789012:role/ecr-reader
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC=true
+  export BUILDKITE_JOB_ID=test-job-id-1234
+
+  stub buildkite-agent \
+    "oidc request-token --audience sts.amazonaws.com --lifetime 3600 : echo fake-oidc-token"
+
+  stub aws \
+    "sts assume-role-with-web-identity --role-arn arn:aws:iam::123456789012:role/ecr-reader --role-session-name ecr-login-buildkite-plugin --duration-seconds 3600 --web-identity-token fake-oidc-token --output text --query * : echo 'AWS_ACCESS_KEY_ID=ASIAFAKEKEY AWS_SECRET_ACCESS_KEY=fakesecret AWS_SESSION_TOKEN=faketoken'" \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region ap-southeast-2 ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 123456789012.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Assuming role with web identity using Buildkite OIDC"
+  assert_output --partial "Role ARN: arn:aws:iam::123456789012:role/ecr-reader"
+  assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
+  assert_output --partial "logging in to docker"
+
+  unstub buildkite-agent
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
+}
+
+@test "ECR login; assume role with OIDC, custom duration-seconds" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=123456789012
+  export BUILDKITE_PLUGIN_ECR_REGION=us-east-1
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN=arn:aws:iam::123456789012:role/ecr-reader
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC=true
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_DURATION_SECONDS=7200
+  export BUILDKITE_JOB_ID=test-job-id-5678
+
+  stub buildkite-agent \
+    "oidc request-token --audience sts.amazonaws.com --lifetime 7200 : echo fake-oidc-token-7200"
+
+  stub aws \
+    "sts assume-role-with-web-identity --role-arn arn:aws:iam::123456789012:role/ecr-reader --role-session-name ecr-login-buildkite-plugin --duration-seconds 7200 --web-identity-token fake-oidc-token-7200 --output text --query * : echo 'AWS_ACCESS_KEY_ID=ASIAFAKEKEY AWS_SECRET_ACCESS_KEY=fakesecret AWS_SESSION_TOKEN=faketoken'" \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region us-east-1 ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Assuming role with web identity using Buildkite OIDC"
+  assert_output --partial "logging in to docker"
+
+  unstub buildkite-agent
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
+}
+
+@test "ECR login; assume role without OIDC still uses sts assume-role" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=123456789012
+  export BUILDKITE_PLUGIN_ECR_REGION=us-east-1
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN=arn:aws:iam::123456789012:role/ecr-reader
+
+  stub aws \
+    "sts assume-role --role-arn arn:aws:iam::123456789012:role/ecr-reader --role-session-name ecr-login-buildkite-plugin --duration-seconds 3600 --output text --query * : echo 'AWS_ACCESS_KEY_ID=ASIAFAKEKEY AWS_SECRET_ACCESS_KEY=fakesecret AWS_SESSION_TOKEN=faketoken'" \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region us-east-1 ecr get-login-password : echo hunter2"
+
+  stub docker \
+    "login --username AWS --password-stdin 123456789012.dkr.ecr.us-east-1.amazonaws.com : cat > /tmp/password-stdin ; echo logging in to docker"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logging in to docker"
+  refute_output --partial "OIDC"
+
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin
+}
+
+@test "ECR login; assume role with OIDC, credential helper" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_CREDENTIAL_HELPER=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=123456789012
+  export BUILDKITE_PLUGIN_ECR_REGION=us-east-1
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN=arn:aws:iam::123456789012:role/ecr-reader
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC=true
+  export BUILDKITE_JOB_ID=test-job-id-9999
+  export HOME=/tmp/test-home
+
+  mkdir -p "$HOME/.docker"
+  echo '{}' > "$HOME/.docker/config.json"
+
+  stub buildkite-agent \
+    "oidc request-token --audience sts.amazonaws.com --lifetime 3600 : echo fake-oidc-token"
+
+  stub aws \
+    "sts assume-role-with-web-identity --role-arn arn:aws:iam::123456789012:role/ecr-reader --role-session-name ecr-login-buildkite-plugin --duration-seconds 3600 --web-identity-token fake-oidc-token --output text --query * : echo 'AWS_ACCESS_KEY_ID=ASIAFAKEKEY AWS_SECRET_ACCESS_KEY=fakesecret AWS_SESSION_TOKEN=faketoken'"
+
+  stub docker-credential-ecr-login
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Assuming role with web identity using Buildkite OIDC"
+  assert_output --partial "~~~ Configuring ECR credential helper :ecr: :docker:"
+  assert_output --partial "Configured ECR credential helper for 123456789012.dkr.ecr.us-east-1.amazonaws.com"
+
+  unstub buildkite-agent
+  unstub aws
+  unstub docker-credential-ecr-login
+  rm -rf "$HOME/.docker"
+}
+
+@test "ECR login; assume role with OIDC fails when buildkite-agent fails" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=123456789012
+  export BUILDKITE_PLUGIN_ECR_REGION=us-east-1
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN=arn:aws:iam::123456789012:role/ecr-reader
+  export BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC=true
+  export BUILDKITE_JOB_ID=test-job-id-fail
+
+  stub buildkite-agent \
+    "oidc request-token --audience sts.amazonaws.com --lifetime 3600 : exit 1"
+
+  run "$PWD/hooks/environment"
+
+  assert_failure
+
+  unstub buildkite-agent
+}
