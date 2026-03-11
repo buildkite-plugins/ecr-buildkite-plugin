@@ -280,11 +280,37 @@ function assume_role_for_ecr_login() {
   export ${export_credentials?}
 }
 
+function assume_role_for_ecr_login_with_oidc() {
+  local role_arn="${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN}"
+  local duration="${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_DURATION_SECONDS:-3600}"
+
+  echo "~~~ Assuming role with web identity using Buildkite OIDC :ecr: :docker:"
+  echo "Role ARN: ${role_arn}"
+  local buildkite_oidc_token
+  buildkite_oidc_token="$(buildkite-agent oidc request-token --audience sts.amazonaws.com --lifetime "$duration")"
+
+  local export_credentials
+  export_credentials="$(aws sts assume-role-with-web-identity \
+    --role-arn "${role_arn}" \
+    --role-session-name "ecr-login-buildkite-plugin" \
+    --duration-seconds "${duration}" \
+    --web-identity-token "${buildkite_oidc_token}" \
+    --output text \
+    --query "[['AWS_ACCESS_KEY_ID',Credentials.AccessKeyId],['AWS_SECRET_ACCESS_KEY',Credentials.SecretAccessKey],['AWS_SESSION_TOKEN',Credentials.SessionToken]][*].join(\`=\`,@)")"
+
+  #shellcheck disable=SC2086
+  export ${export_credentials?}
+}
+
 if [[ "${BUILDKITE_PLUGIN_ECR_LOGIN:-true}" =~ ^(true|1)$ ]] ; then
   (
     # Assume role first if specified, so credential helper uses correct credentials
     if [[ -n "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_ROLE_ARN:-}" ]]; then
-      assume_role_for_ecr_login
+      if [[ "${BUILDKITE_PLUGIN_ECR_ASSUME_ROLE_OIDC:-false}" =~ ^(true|1)$ ]]; then
+        assume_role_for_ecr_login_with_oidc
+      else
+        assume_role_for_ecr_login
+      fi
     fi
 
     login

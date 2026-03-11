@@ -39,6 +39,23 @@ steps:
             role_arn: "arn:aws:iam::0015615400570:role/demo"
 ```
 
+If you need to assume a role using [Buildkite OIDC](https://buildkite.com/docs/agent/v3/cli-oidc) (no long-lived AWS credentials required):
+
+```yml
+steps:
+  - command: ./run_build.sh
+    plugins:
+      - ecr#v2.x.x:
+          account-ids: "0015615400570"
+          region: "ap-southeast-2"
+          assume-role:
+            role-arn: "arn:aws:iam::0015615400570:role/demo"
+            oidc: true
+```
+
+> [!NOTE]
+> OIDC requires a Buildkite OIDC identity provider configured in your AWS account. See the [aws-assume-role-with-web-identity plugin](https://github.com/buildkite-plugins/aws-assume-role-with-web-identity-buildkite-plugin) for setup instructions.
+
 ### Using ECR Credential Helper
 
 You can use the [Amazon ECR credential helper](https://github.com/awslabs/amazon-ecr-credential-helper) instead of the traditional AWS CLI login methods. This provides automatic credential management and better performance through caching:
@@ -125,7 +142,23 @@ Retries login after a delay N times. Defaults to 0.
 
 > Updates AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN environment variables.
 
-Assume an AWS IAM role before ECR login. Supports `role-arn` and `duration-seconds` (optional) per the [associated AWS CLI command.](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/sts/assume-role.html)
+Assume an AWS IAM role before ECR login. Supports the following sub-options:
+
+#### `assume-role.role-arn` (required when using `assume-role`)
+
+ARN of the IAM role to assume.
+
+#### `assume-role.duration-seconds` (optional)
+
+Duration in seconds for the assumed role session. Defaults to `3600`. Passed as `--duration-seconds` to the STS CLI command.
+
+#### `assume-role.oidc` (optional)
+
+When `true`, exchanges a [Buildkite OIDC token](https://buildkite.com/docs/agent/v3/cli-oidc) for AWS credentials using `sts:AssumeRoleWithWebIdentity` instead of the standard `sts:AssumeRole`. This avoids the need for any long-lived AWS credentials on the agent.
+
+Defaults to `false`.
+
+For AWS account setup (OIDC identity provider and IAM role trust policy), refer to the [aws-assume-role-with-web-identity plugin documentation](https://github.com/buildkite-plugins/aws-assume-role-with-web-identity-buildkite-plugin).
 
 ### `profile` (optional)
 
