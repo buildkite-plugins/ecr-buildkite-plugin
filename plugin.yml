@@ -23,7 +23,10 @@ configuration:
     no-include-email:
       type: boolean
     region:
-      type: string
+      type:
+        - string
+        - array
+      minItems: 1
     assume-role:
       type: object
       properties:
