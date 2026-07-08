@@ -29,6 +29,16 @@ function setup_ecr_credential_helper() {
       fi
     fi
   fi
+
+  # Read regions
+  local regions=()
+  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
+
+  # If no regions specified, use defaults
+  if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
+    local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DeFAULT_REGION:-us-east-1}}}"
+    regions=("$default_region")
+  fi
   
   # Configure credential helper for each registry
   local tmp_file
@@ -43,28 +53,29 @@ function setup_ecr_credential_helper() {
   # Start with existing config and ensure credHelpers object exists
   jq '.credHelpers = (.credHelpers // {})' "$docker_config_file" > "$tmp_file"
   
-  # Configure credential helper for each ECR registry
-  for account_id in "${account_ids[@]}"; do
-    if [[ -n "$account_id" ]]; then
-      if [[ "$account_id" == "public.ecr.aws" ]]; then
-        # Configure for ECR Public
-        jq --arg registry "$account_id" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
-        echo "Configured ECR credential helper for $account_id"
-      else
-        # Configure for private ECR registries
-        local region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}}"
-        local ecr_registry_url
-        
-        if [[ ${region:0:3} == "cn-" ]]; then
-          ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
+  # Configure credential helper for each region and account combination
+  for region in "${regions[@]}"; do
+    for account_id in "${account_ids[@]}"; do
+      if [[ -n "$account_id" ]]; then
+        if [[ "$account_id" == "public.ecr.aws" ]]; then
+          # Configure for ECR Public
+          jq --arg registry "$account_id" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
+          echo "Configured ECR credential helper for $account_id"
         else
-          ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com"
-        fi
+          # Configure for private ECR registries
+          local ecr_registry_url
         
-        jq --arg registry "$ecr_registry_url" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
-        echo "Configured ECR credential helper for $ecr_registry_url"
+          if [[ ${region:0:3} == "cn-" ]]; then
+            ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
+          else
+            ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com"
+          fi
+        
+          jq --arg registry "$ecr_registry_url" '.credHelpers[$registry] = "ecr-login"' "$tmp_file" > "$tmp_file.new" && mv "$tmp_file.new" "$tmp_file"
+          echo "Configured ECR credential helper for $ecr_registry_url"
+        fi
       fi
-    fi
+    done
   done
   
   # Atomic move to prevent race conditions with other processes
