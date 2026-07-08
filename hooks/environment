@@ -158,7 +158,7 @@ function login_using_aws_ecr_get_login() {
   regions=()
   while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
 
-  if [[ ${#regions[@]} -eq 0 || -z "$regions[*]}" ]]; then
+  if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
     if [[ -z "${AWS_DEFAULT_REGION:-}" ]]; then
       regions=("us-east-1")
     else
@@ -237,7 +237,6 @@ function login_using_aws_ecr_get_login_password() {
   # amend the ~~~ log heading with ^^^ to add the AWS account IDs
   echo "^^^ Authenticating with AWS ECR for ${account_ids[*]} in regions: ${regions[*]} :ecr: :docker:"
 
-  local password;
   local public_password;
 
   for region in "${regions[@]}"; do
