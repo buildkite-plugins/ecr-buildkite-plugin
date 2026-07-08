@@ -36,7 +36,7 @@ function setup_ecr_credential_helper() {
 
   # If no regions specified, use defaults
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
-    local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DeFAULT_REGION:-us-east-1}}}"
+    local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}}"
     regions=("$default_region")
   fi
   
