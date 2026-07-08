@@ -132,7 +132,43 @@ Add `--no-include-email` to ecr get-login. Required for Docker 17.06+, but needs
 
 ### `region` (optional)
 
+Either a string, or a list of strings with AWS regions for ECR. When multiple regions are specified, the plugin will log in to all specified regions in a single plugin call, eliminating the need for multiple plugin instances.
+
 Set a specific region for ECR, defaults to `AWS_DEFAULT_REGION` on the agent, or `us-east-1` if none specified.
+
+#### Example: Multiple regions
+
+Instead of duplicating the plugin call for each region:
+
+```yml
+steps:
+  - label: ":docker: Build and push app image"
+    plugins:
+      - docker-compose#v3.x.x:
+          config: docker-compose.yml
+          build: "myservice"
+          push:
+            - "123456789012.dkr.ecr.ap-southeast-2.amazonaws.com/myapp:${BUILD_TAG}"
+            - "123456789012.dkr.ecr.eu-west-1.amazonaws.com/myapp:${BUILD_TAG}"
+            - "123456789012.dkr.ecr.us-west-1.amazonaws.com/myapp:${BUILD_TAG}"
+            - "123456789012.dkr.ecr.us-west-2.amazonaws.com/myapp:${BUILD_TAG}"
+      - ecr#v2.x.x:
+          region:
+            - ap-southeast-2
+            - eu-west-1
+            - us-west-1
+            - us-west-2
+```
+
+Or as a comma-separated string:
+
+```yml
+steps:
+  - label: ":docker: Build and push app image"
+    plugins:
+      - ecr#v2.x.x:
+          region: "ap-southeast-2,eu-west-1,us-west-1,us-west-2"
+```
 
 ### `retries` (optional)
 
