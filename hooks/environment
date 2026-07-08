@@ -187,7 +187,7 @@ function login_using_aws_ecr_get_login() {
 
     if [[ ${#registry_ids[@]} -gt 0 ]] ; then
       # amend the ~~~ log heading with ^^^ to add the AWS account IDs
-      echo "^^^ Authenticating with AWS ECR for ${registry_ids[*]} in $region :ecr: :docker:"
+      echo "^^^ Authenticating with AWS ECR in $region for ${registry_ids[*]} :ecr: :docker:"
       region_args+=("--registry-ids" "${registry_ids[@]}")
     fi
 
@@ -212,7 +212,7 @@ function login_using_aws_ecr_get_login_password() {
     if [[ -z $default_region ]]; then
       default_region="us-east-1"
       echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
-      echo >&2 "Defaulting to $region for legacy compatibility."
+      echo >&2 "Defaulting to $default_region for legacy compatibility."
     fi
     regions=("$default_region")
   fi
