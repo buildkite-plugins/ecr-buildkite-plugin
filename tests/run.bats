@@ -1002,3 +1002,84 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   unstub buildkite-agent
 }
+
+@test "ECR login; multiple regions as array" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
+  export BUILDKITE_PLUGIN_ECR_REGION_0=ap-southeast-2
+  export BUILDKITE_PLUGIN_ECR_REGION_1=eu-west-1
+
+  stub aws \
+    "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "--region ap-southeast-2 ecr get-login-password : echo password1" \
+    "--region eu-west-1 ecr get-login-password : echo password2"
+
+  stub docker \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logged in to ap-southeast-2" \
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.aeu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "Authenticating with AWS ECR for 321321321321 in regions: ap-southeast-2 eu-west-1"
+  assert_output --partial "logged in to ap-southeast-2"
+  assert_output --partial "logged in to eu-west-1"
+  assert_equal "password1" "$(cat /tmp/password-stdin-1)"
+  assert_equal "password2" "$(cat /tmp/password-stdin-2)"
+
+  unstub aws
+  unstub docker
+  rm /tmp/password-stdin-1 /tmp/password-stdin-2
+ }
+
+ @test "ECR login; multiple comma-separated regions" {
+   export BUILDKITE_PLUGIN_ECR_LOGIN=true
+   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDs=321321321321
+   export BUILDKITE_PLUGIN_ECR_REGION="ap-southeast-2,eu-west-1"
+
+   stub aws \
+     "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+     "--region ap-southeast-2 ecr get-login-password : echo password1" \
+     "--region eu-west-1 ecr get-login-password : echo password2"
+
+   stub docker \
+     "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logged in to ap-southeast-2" \
+     "login --username AWS --password-stdin 321321321321.dkr.ecr.aeu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
+
+   run "$PWD/hooks/environment"
+
+   assert_success
+   assert_output --partial "logged in to ap-southeast-2"
+   assert_output --partial "logged in to eu-west-1"
+
+   unstub aws
+   unstub docker
+   rm /tmp/password-stdin-1 /tmp/password-stdin-2
+ }
+
+ @test "ECR login; multiple regions with multiple account IDs" {
+   export BUILDKITE_PLUGIN_ECR_LOGIN=true
+   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_0=111111111111
+   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS_1=222222222222
+   export BUILDKITE_PLUGIN_ECR_REGION_0=us-east-1
+   export BUILDKITE_PLUGIN_ECR_REGION_1=us-west-2
+
+   stub aws \
+     "--version : echo aws-cli/2.0.0 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+     "--region us-east-1 ecr get-login-password : echo password-ue1" \
+     "--region us-west-2 ecr get-login-password : echo password-uw2"
+
+   stub docker \
+     "login --username AWS --password-stdin 111111111111.dkr.ecr.us-east-1.amazonaws.com : echo logged in" \
+     "login --username AWS --password-stdin 222222222222.dkr.ecr.us-east-1.amazonaws.com : echo logged in" \
+     "login --username AWS --password-stdin 111111111111.dkr.ecr.us-west-2.amazonaws.com : echo logged in" \
+     "login --username AWS --password-stdin 222222222222.dkr.ecr.us-west-2.amazonaws.com : echo logged in"
+
+   run "$PWD/hooks/environment"
+
+   assert_success
+   assert_output --partial "Authenticating with AWS ECR for 111111111111 222222222222 in regions: us-east-1 us-west-2"
+
+   unstub aws
+   unstub docker
+}
