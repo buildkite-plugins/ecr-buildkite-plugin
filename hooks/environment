@@ -235,7 +235,7 @@ function login_using_aws_ecr_get_login_password() {
     exit 1
   fi
   # amend the ~~~ log heading with ^^^ to add the AWS account IDs
-  echo "^^^ Authenticating with AWS ECR for ${account_ids[*]} in regions: ${regions[*]} :ecr: :docker:"
+  echo "^^^ Authenticating with AWS ECR in ${regions[*]} for ${account_ids[*]} :ecr: :docker:"
 
   local public_password;
 
