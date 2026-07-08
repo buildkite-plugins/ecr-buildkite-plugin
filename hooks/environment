@@ -209,7 +209,7 @@ function login_using_aws_ecr_get_login_password() {
 
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
     local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-}}}"
-    if [[ -z $default_region ]]; then
+    if [[ -z "$default_region" ]]; then
       default_region="us-east-1"
       echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
       echo >&2 "Defaulting to $default_region for legacy compatibility."
