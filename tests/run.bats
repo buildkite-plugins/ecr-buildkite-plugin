@@ -1016,7 +1016,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub docker \
     "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logged in to ap-southeast-2" \
-    "login --username AWS --password-stdin 321321321321.dkr.ecr.aeu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
+    "login --username AWS --password-stdin 321321321321.dkr.ecr.eu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
 
   run "$PWD/hooks/environment"
 
@@ -1044,7 +1044,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
    stub docker \
      "login --username AWS --password-stdin 321321321321.dkr.ecr.ap-southeast-2.amazonaws.com : cat > /tmp/password-stdin-1 ; echo logged in to ap-southeast-2" \
-     "login --username AWS --password-stdin 321321321321.dkr.ecr.aeu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
+     "login --username AWS --password-stdin 321321321321.dkr.ecr.eu-west-1.amazonaws.com : cat > /tmp/password-stdin-2 ; echo logged in to eu-west-1"
 
    run "$PWD/hooks/environment"
 
