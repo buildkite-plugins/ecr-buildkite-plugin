@@ -1021,7 +1021,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   run "$PWD/hooks/environment"
 
   assert_success
-  assert_output --partial "Authenticating with AWS ECR in regions: ap-southeast-2 eu-west-1 for 321321321321 "
+  assert_output --partial "Authenticating with AWS ECR in ap-southeast-2 eu-west-1 for 321321321321 "
   assert_output --partial "logged in to ap-southeast-2"
   assert_output --partial "logged in to eu-west-1"
   assert_equal "password1" "$(cat /tmp/password-stdin-1)"
@@ -1078,7 +1078,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
    run "$PWD/hooks/environment"
 
    assert_success
-   assert_output --partial "Authenticating with AWS ECR  in regions: us-east-1 us-west-2 for 111111111111 222222222222"
+   assert_output --partial "Authenticating with AWS ECR in us-east-1 us-west-2 for 111111111111 222222222222"
 
    unstub aws
    unstub docker
