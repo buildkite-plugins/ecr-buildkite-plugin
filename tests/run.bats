@@ -1034,7 +1034,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
  @test "ECR login; multiple comma-separated regions" {
    export BUILDKITE_PLUGIN_ECR_LOGIN=true
-   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDs=321321321321
+   export BUILDKITE_PLUGIN_ECR_ACCOUNT_IDS=321321321321
    export BUILDKITE_PLUGIN_ECR_REGION="ap-southeast-2,eu-west-1"
 
    stub aws \
