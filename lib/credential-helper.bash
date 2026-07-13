@@ -32,8 +32,13 @@ function setup_ecr_credential_helper() {
 
   # Read regions
   local regions=()
-  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
 
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]]; then
+    regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
+  else
+    while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
+  fi
+  
   # If no regions specified, use defaults
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
     local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}}"
