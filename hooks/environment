@@ -155,17 +155,9 @@ function login_using_aws_ecr_get_login() {
   registry_ids=()
   while IFS='' read -r line; do registry_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
 
-  regions=()
-  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
-
-  if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
-    if [[ -z "${AWS_DEFAULT_REGION:-}" ]]; then
-      regions=("us-east-1")
-    else
-      regions=("${AWS_DEFAULT_REGION}")
-    fi
-  fi
-
+if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
+  regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}")
+fi
   login_args=()
 
   # If not specified, auto-detect if we can support no-include-email
