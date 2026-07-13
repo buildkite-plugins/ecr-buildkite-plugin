@@ -161,7 +161,7 @@ function login_using_aws_ecr_get_login() {
   if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]]; then
     regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
   else
-  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
+    while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
   fi
 
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
