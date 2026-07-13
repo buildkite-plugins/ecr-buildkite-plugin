@@ -197,11 +197,17 @@ function login_using_aws_ecr_get_login_password() {
   echo "~~~ Authenticating with AWS ECR :ecr: :docker:"
 
   regions=()
-  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
+
+  #Preserve legacy precedence: REGISTRY_REGION > REGION > AWS_DEFAULT_REGION > us-east-1
+  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]]; then
+    regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
+  else
+    while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
+  fi
 
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
-    local default_region="${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-${BUILDKITE_PLUGIN_ECR_REGION:-${AWS_DEFAULT_REGION:-}}}"
-    if [[ -z "$default_region" ]]; then
+      local default_region="${AWS_DEFAULT_REGION:-}"
+      if [[ -z "$default_region" ]]; then
       default_region="us-east-1"
       echo >&2 "AWS region should be specified via plugin config or AWS_DEFAULT_REGION environment."
       echo >&2 "Defaulting to $default_region for legacy compatibility."
@@ -231,6 +237,12 @@ function login_using_aws_ecr_get_login_password() {
 
   local public_password;
 
+  if [[ " ${account_ids[*]} " == *" public.ecr.aws "* ]]; then
+    echo "Authenticating with public.ecr.aws"
+    public_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region us-east-1 ecr-public get-login-password)"
+    retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin public.ecr.aws <<< "$public_password"
+  fi
+
   for region in "${regions[@]}"; do
     local login_args=("--region" "$region")
 
@@ -240,24 +252,20 @@ function login_using_aws_ecr_get_login_password() {
 
     for account_id in "${account_ids[@]}"; do
       if [[ $account_id == "public.ecr.aws" ]]; then
-        # special AWS command with us-east-1 region
-        echo "Ignoring region for $account_id and forcing us-east-1"
-        public_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws --region us-east-1 ecr-public get-login-password)"
-        retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin public.ecr.aws <<< "$public_password"
-      else
-        if [[ ${region:0:3} == "cn-" ]]; then
-          # the ecr registry in China regions has a different URL
-          ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
-        else
-          ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com"
-        fi
-        # it is only necessary to get the password once
-        local region_password=${region_password:-""}
-        if [[ -z "$region_password" ]]; then
-          region_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"
-        fi
-        retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$ecr_registry_url" <<< "$region_password"
+        continue
       fi
+
+      if [[ ${region:0:3} == "cn-" ]]; then
+        # the ecr registry in China regions has a different URL
+        ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com.cn"
+      else
+        ecr_registry_url="$account_id.dkr.ecr.$region.amazonaws.com"
+      fi
+
+      if [[ -z "$region_password" ]]; then
+        region_password="$(retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" aws ${login_args[@]+"${login_args[@]}"} ecr get-login-password)"
+      fi
+        retry "${BUILDKITE_PLUGIN_ECR_RETRIES:-0}" --with-stdin docker login --username AWS --password-stdin "$ecr_registry_url" <<< "$region_password"
     done
     unset region_password
   done
