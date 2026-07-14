@@ -544,8 +544,8 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "ecr get-login --no-include-email : exit 1" \
-    "ecr get-login --no-include-email : exit 1"
+    "ecr get-login --no-include-email --region us-east-1 : exit 1" \
+    "ecr get-login --no-include-email --region us-east-1 : exit 1"
 
   run "$PWD/hooks/environment"
 
