@@ -433,7 +433,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   assert_success
   assert_output --partial "~~~ Authenticating with AWS ECR :ecr: :docker:"
-  assert_output --partial "^^^ Authenticating with AWS ECR for 1111 2222 :ecr: :docker:"
+  assert_output --partial "^^^ Authenticating with AWS ECR in us-east-1 for 1111 2222 :ecr: :docker:"
   assert_output --partial "logging in to docker"
 
   unstub aws
@@ -524,8 +524,8 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "ecr get-login --no-include-email : exit 1" \
-    "ecr get-login --no-include-email : echo echo logging in to docker"
+    "ecr get-login --no-include-email --region us-east-1 : exit 1" \
+    "ecr get-login --no-include-email --region us-east-1 : echo echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
