@@ -364,7 +364,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "--region us-east-1 ecr get-login --no-include-email : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
+    "ecr get-login --no-include-email --region us-east-1 : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
 
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
@@ -384,7 +384,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "--region us-east-1 ecr get-login --no-include-email : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
+    "ecr get-login --no-include-email --region us-east-1 : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
 
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
@@ -405,7 +405,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "--region us-east-1 ecr get-login : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
+    "ecr get-login --region us-east-1 : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com"
 
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
@@ -427,7 +427,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "--region us-east-1 ecr get-login --no-include-email --registry-ids 1111 2222 : echo echo logging in to docker"
+    "ecr get-login --no-include-email --region us-east-1 --registry-ids 1111 2222 : echo echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -446,7 +446,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   stub aws \
     "--version : echo aws-cli/1.11.40 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
     "--version : echo aws-cli/1.11.40 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
-    "--region us-east-1 ecr get-login --registry-ids 1111 2222 3333 : echo echo logging in to docker"
+    "ecr get-login --region us-east-1 --registry-ids 1111 2222 3333 : echo echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -463,7 +463,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
   stub aws \
     "--version : echo aws-cli/1.11.117 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
     "--version : echo aws-cli/1.11.117 Python/2.7.10 Darwin/16.6.0 botocore/1.5.80" \
-    "--region us-east-1 ecr get-login --no-include-email --registry-ids 1111 2222 3333 : echo echo logging in to docker"
+    "ecr get-login --no-include-email --region us-east-1 --registry-ids 1111 2222 3333 : echo echo logging in to docker"
 
   run "$PWD/hooks/environment"
 
@@ -480,7 +480,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "--region us-east-1 ecr get-login --no-include-email --region ap-southeast-2 : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com"
+    "ecr get-login --no-include-email --region ap-southeast-2 : echo docker login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com"
 
   stub docker \
     "login -u AWS -p 1234 https://1234.dkr.ecr.ap-southeast-2.amazonaws.com : echo logging in to docker"
