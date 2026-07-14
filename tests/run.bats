@@ -562,7 +562,7 @@ load "${BATS_PLUGIN_PATH}/load.bash"
 
   stub aws \
     "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
-    "ecr get-login --no-include-email : echo docker login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com"
+    "ecr get-login --no-include-email --region us-east-1 : echo docker login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com"
 
   stub docker \
     "login -u AWS -p supersecret https://1234.dkr.ecr.us-east-1.amazonaws.com : echo logging in to docker"
