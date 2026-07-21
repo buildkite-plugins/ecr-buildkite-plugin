@@ -1083,3 +1083,24 @@ load "${BATS_PLUGIN_PATH}/load.bash"
    unstub aws
    unstub docker
 }
+
+@test "ECR login (before aws cli 1.17.10); region list takes precedence over registry-region" {
+  export BUILDKITE_PLUGIN_ECR_LOGIN=true
+  export BUILDKITE_PLUGIN_ECR_NO_INCLUDE_EMAIL=true
+  export BUILDKITE_PLUGIN_ECR_REGISTRY_REGION=ap-northeast-1
+  export BUILDKITE_PLUGIN_ECR_REGION_0=ap-southeast-2
+  export BUILDKITE_PLUGIN_ECR_REGION_1=eu-west-1
+
+  stub aws \
+    "--version : echo aws-cli/1.17.9 Python/3.8.1 Linux/5.5.6-arch1-1 botocore/1.15.3" \
+    "ecr get-login --no-include-email --region ap-southeast-2 : echo echo logged in to ap-southeast-2" \
+    "ecr get-login --no-include-email --region eu-west-1 : echo echo logged in to eu-west-1"
+
+  run "$PWD/hooks/environment"
+
+  assert_success
+  assert_output --partial "logged in to ap-southeast-2"
+  assert_output --partial "logged in to eu-west-1"
+
+  unstub aws
+}
