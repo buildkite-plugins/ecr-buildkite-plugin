@@ -155,17 +155,18 @@ function login_using_aws_ecr_get_login() {
   registry_ids=()
   while IFS='' read -r line; do registry_ids+=("$line"); done < <(plugin_read_list ACCOUNT_IDS | tr "," "\n")
 
-  # Preserve legacy precedence: REGISTRY_REGION > REGION > AWS_DEFAULT_REGION > us-east-1
+  # Preserve legacy precedence: REGION > REGISTRY_REGION > AWS_DEFAULT_REGION > us-east-1
   regions=()
-
-  if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]]; then
-    regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
-  else
-    while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
-  fi
+  while IFS='' read -r line; do regions+=("$line"); done < <(plugin_read_list REGION | tr "," "\n")
 
   if [[ ${#regions[@]} -eq 0 || -z "${regions[*]}" ]]; then
-    regions=("${AWS_DEFAULT_REGION:-us-east-1}")
+    if [[ -n "${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION:-}" ]]; then
+      regions=("${BUILDKITE_PLUGIN_ECR_REGISTRY_REGION}")
+    elif [[ -n "${AWS_DEFAULT_REGION:-}" ]]; then
+      regions=("${AWS_DEFAULT_REGION}")
+    else
+      regions=("us-east-1")
+    fi
   fi
 
   login_args=()
